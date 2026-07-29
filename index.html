@@ -333,7 +333,7 @@ const FAQ_ITEMS = [
 /* ================= SUPABASE CONNECTION (paste your own project's values — see the setup guide) ================= */
 const SUPABASE_URL = 'https://paqyxluvvudxcljvxvau.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhcXl4bHV2dnVkeGNsanZ4dmF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUxOTU5NjUsImV4cCI6MjEwMDc3MTk2NX0.7zf-ES4KBIF58dMoElf7_rorc6QC_rNizUY-arBZUHw';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ================= WORKSPACES (Kairox Exchange / Kairox Logistics) ================= */
 const WORKSPACES = [
@@ -355,17 +355,17 @@ const DEFAULT_LTD_RATES = { standard:25, regulated:33.33, choice:'standard' };
 async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
   if (error) { document.getElementById('loginError').textContent = error.message; return; }
   showApp();
 }
 async function doLogout() {
-  await supabase.auth.signOut();
+  await supabaseClient.auth.signOut();
   document.getElementById('appScreen').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'block';
 }
 async function showApp() {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await supabaseClient.auth.getUser();
   if (!user) return;
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appScreen').style.display = 'block';
@@ -383,13 +383,13 @@ async function showApp() {
 }
 // If already logged in from a previous visit, skip straight to the app.
 (async () => {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   if (session) showApp();
 })();
 
 /* ================= LOAD / SAVE (all scoped to currentWorkspace) ================= */
 async function loadSettings() {
-  const { data, error } = await supabase.from('settings').select('data').eq('workspace', currentWorkspace).maybeSingle();
+  const { data, error } = await supabaseClient.from('settings').select('data').eq('workspace', currentWorkspace).maybeSingle();
   if (error) { console.error(error); }
   if (data && data.data) {
     company = { ...DEFAULT_COMPANY, ...data.data.company };
@@ -405,22 +405,22 @@ async function loadSettings() {
   }
 }
 async function persistSettings() {
-  const { error } = await supabase.from('settings').upsert({
+  const { error } = await supabaseClient.from('settings').upsert({
     workspace: currentWorkspace,
     data: { company, rates, seRates, ltdRates }
   });
   if (error) alert('Could not save to the database: ' + error.message);
 }
 async function loadEmployees() {
-  const { data, error } = await supabase.from('employees').select('*').eq('workspace', currentWorkspace).order('created_at');
+  const { data, error } = await supabaseClient.from('employees').select('*').eq('workspace', currentWorkspace).order('created_at');
   if (error) { console.error(error); return; }
   employees = data || [];
 }
 async function loadIncomeExpensePartners() {
   const [inc, exp, par] = await Promise.all([
-    supabase.from('income_lines').select('*').eq('workspace', currentWorkspace).order('created_at'),
-    supabase.from('expense_lines').select('*').eq('workspace', currentWorkspace).order('created_at'),
-    supabase.from('partners').select('*').eq('workspace', currentWorkspace).order('created_at')
+    supabaseClient.from('income_lines').select('*').eq('workspace', currentWorkspace).order('created_at'),
+    supabaseClient.from('expense_lines').select('*').eq('workspace', currentWorkspace).order('created_at'),
+    supabaseClient.from('partners').select('*').eq('workspace', currentWorkspace).order('created_at')
   ]);
   incomeLines = inc.data || [];
   expenseLines = exp.data || [];
@@ -596,9 +596,9 @@ async function saveEmployee() {
   if (!data.name || !data.gross) { alert('Name and gross salary are required.'); return; }
   let error;
   if (editId) {
-    ({ error } = await supabase.from('employees').update(data).eq('id', editId));
+    ({ error } = await supabaseClient.from('employees').update(data).eq('id', editId));
   } else {
-    ({ error } = await supabase.from('employees').insert({ ...data, workspace: currentWorkspace }));
+    ({ error } = await supabaseClient.from('employees').insert({ ...data, workspace: currentWorkspace }));
   }
   if (error) { alert('Could not save: ' + error.message); return; }
   clearEmployeeForm();
@@ -619,7 +619,7 @@ function clearEmployeeForm() {
 }
 async function deleteEmployee(id) {
   if (!confirm('Delete this employee?')) return;
-  const { error } = await supabase.from('employees').delete().eq('id', id);
+  const { error } = await supabaseClient.from('employees').delete().eq('id', id);
   if (error) { alert('Could not delete: ' + error.message); return; }
   await loadEmployees();
   renderEmployees();
@@ -696,7 +696,7 @@ async function addLine(kind) {
   const desc = document.getElementById(descId).value.trim();
   const amt = +document.getElementById(amtId).value;
   if (!desc || !amt) { alert('Enter a description and amount.'); return; }
-  const { error } = await supabase.from(table).insert({ description: desc, amt, workspace: currentWorkspace });
+  const { error } = await supabaseClient.from(table).insert({ description: desc, amt, workspace: currentWorkspace });
   if (error) { alert('Could not save: ' + error.message); return; }
   document.getElementById(descId).value = ''; document.getElementById(amtId).value = '';
   await loadIncomeExpensePartners();
@@ -714,7 +714,7 @@ function renderLines(kind) {
 }
 async function removeLine(kind, id) {
   const table = kind === 'income' ? 'income_lines' : 'expense_lines';
-  const { error } = await supabase.from(table).delete().eq('id', id);
+  const { error } = await supabaseClient.from(table).delete().eq('id', id);
   if (error) { alert('Could not remove: ' + error.message); return; }
   await loadIncomeExpensePartners();
   renderLines(kind);
@@ -724,7 +724,7 @@ async function addPartner() {
   const trn = document.getElementById('partnerTrn').value.trim();
   const share = +document.getElementById('partnerShare').value;
   if (!name || !share) { alert('Enter a name and share percentage.'); return; }
-  const { error } = await supabase.from('partners').insert({ name, trn, share, workspace: currentWorkspace });
+  const { error } = await supabaseClient.from('partners').insert({ name, trn, share, workspace: currentWorkspace });
   if (error) { alert('Could not save: ' + error.message); return; }
   document.getElementById('partnerName').value = ''; document.getElementById('partnerTrn').value = ''; document.getElementById('partnerShare').value = '';
   await loadIncomeExpensePartners();
@@ -739,7 +739,7 @@ function renderPartners() {
   });
 }
 async function removePartner(id) {
-  const { error } = await supabase.from('partners').delete().eq('id', id);
+  const { error } = await supabaseClient.from('partners').delete().eq('id', id);
   if (error) { alert('Could not remove: ' + error.message); return; }
   await loadIncomeExpensePartners();
   renderPartners();
@@ -1015,16 +1015,16 @@ function importData(event) {
       // Employees, income/expense lines, and partners are appended as new rows
       // (their old ids came from the local version, not this database).
       if (data.employees && data.employees.length) {
-        await supabase.from('employees').insert(data.employees.map(({id, ...rest}) => ({ ...rest, workspace: currentWorkspace })));
+        await supabaseClient.from('employees').insert(data.employees.map(({id, ...rest}) => ({ ...rest, workspace: currentWorkspace })));
       }
       if (data.incomeLines && data.incomeLines.length) {
-        await supabase.from('income_lines').insert(data.incomeLines.map(({id, desc, ...rest}) => ({ ...rest, description: desc, workspace: currentWorkspace })));
+        await supabaseClient.from('income_lines').insert(data.incomeLines.map(({id, desc, ...rest}) => ({ ...rest, description: desc, workspace: currentWorkspace })));
       }
       if (data.expenseLines && data.expenseLines.length) {
-        await supabase.from('expense_lines').insert(data.expenseLines.map(({id, desc, ...rest}) => ({ ...rest, description: desc, workspace: currentWorkspace })));
+        await supabaseClient.from('expense_lines').insert(data.expenseLines.map(({id, desc, ...rest}) => ({ ...rest, description: desc, workspace: currentWorkspace })));
       }
       if (data.partners && data.partners.length) {
-        await supabase.from('partners').insert(data.partners.map(({id, ...rest}) => ({ ...rest, workspace: currentWorkspace })));
+        await supabaseClient.from('partners').insert(data.partners.map(({id, ...rest}) => ({ ...rest, workspace: currentWorkspace })));
       }
 
       await loadAllData();
