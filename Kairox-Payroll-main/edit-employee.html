@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Employee Form | Kairox Payroll</title>
+
+  <link
+    rel="stylesheet"
+    href="css/employee-form.css"
+  >
+</head>
+
+<body>
+
+  <main class="employee-form-page">
+
+    <header class="form-header">
+      <div>
+        <a
+          id="backToProfile"
+          class="back-link"
+          href="employees-v2.html"
+        >
+          ← Back to Employees
+        </a>
+
+        <p class="eyebrow">EMPLOYEE MANAGEMENT</p>
+        <h1 id="formTitle">Edit Employee</h1>
+        <p>Update the employee’s personal and employment details.</p>
+      </div>
+    </header>
+
+    <form id="employeeEditForm" class="employee-form">
+
+      <section class="form-card">
+        <div class="section-heading">
+          <h2>Personal Information</h2>
+          <p>Basic contact and identification details.</p>
+        </div>
+
+        <div class="form-grid">
+
+          <label>
+            Full Name
+            <input
+              id="employeeNameInput"
+              type="text"
+              required
+            >
+          </label>
+
+          <label>
+            Employee Number
+            <input
+              id="employeeNumberInput"
+              type="text"
+            >
+          </label>
+
+          <label>
+            Email
+            <input
+              id="employeeEmailInput"
+              type="email"
+            >
+          </label>
+
+          <label>
+            Phone
+            <input
+              id="employeePhoneInput"
+              type="tel"
+            >
+          </label>
+
+          <label>
+            TRN
+            <input
+              id="employeeTrnInput"
+              type="text"
+            >
+          </label>
+
+        </div>
+      </section>
+
+      <section class="form-card">
+        <div class="section-heading">
+          <h2>Employment Details</h2>
+          <p>Role, department, salary and employment status.</p>
+        </div>
+
+        <div class="form-grid">
+
+          <label>
+            Job Title
+            <input
+              id="employeeTitleInput"
+              type="text"
+            >
+          </label>
+
+          <label>
+            Department
+            <input
+              id="employeeDepartmentInput"
+              type="text"
+            >
+          </label>
+
+          <label>
+            Gross Salary
+            <input
+              id="employeeGrossInput"
+              type="number"
+              min="0"
+              step="0.01"
+            >
+          </label>
+
+          <label>
+            Start Date
+            <input
+              id="employeeStartDateInput"
+              type="date"
+            >
+          </label>
+
+          <label>
+            Employment Status
+            <select id="employeeStatusInput">
+              <option value="active">Active</option>
+              <option value="on leave">On Leave</option>
+              <option value="inactive">Inactive</option>
+              <option value="archived">Archived</option>
+            </select>
+          </label>
+
+        </div>
+      </section>
+
+      <div id="employeeFormMessage" class="form-message"></div>
+
+      <div class="form-actions">
+        <a
+          id="cancelEditLink"
+          class="secondary-button"
+          href="employees-v2.html"
+        >
+          Cancel
+        </a>
+
+        <button
+          id="saveEmployeeButton"
+          class="primary-button"
+          type="submit"
+        >
+          <span id="saveButtonText">
+    Save Changes
+</span>
+        </button>
+      </div>
+
+    </form>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/edit-employee.js"></script>
+
+</body>
+</html>

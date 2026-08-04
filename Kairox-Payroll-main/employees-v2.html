@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Employees | Kairox Payroll</title>
+
+  <link
+    rel="stylesheet"
+    href="css/employees-v2.css"
+  >
+  <link
+  rel="stylesheet"
+  href="css/ui.css"
+>
+
+</head>
+
+<body>
+
+  <div class="employees-layout">
+
+    <aside class="sidebar">
+
+      <div class="brand">
+        <div class="brand-mark">K</div>
+
+        <div>
+          <h1>KAIROX</h1>
+          <p>Payroll</p>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+
+        <a class="nav-item" href="dashboard-v2.html">
+          <i data-lucide="house"></i>
+          <span>Home</span>
+        </a>
+
+        <a class="nav-item active" href="employees-v2.html">
+          <i data-lucide="users"></i>
+          <span>Employees</span>
+        </a>
+
+        <a class="nav-item" href="#">
+          <i data-lucide="circle-dollar-sign"></i>
+          <span>Payroll</span>
+        </a>
+
+        <a class="nav-item" href="#">
+          <i data-lucide="receipt-text"></i>
+          <span>Payslips</span>
+        </a>
+
+        <a class="nav-item" href="#">
+          <i data-lucide="shield-check"></i>
+          <span>Compliance</span>
+        </a>
+
+        <a class="nav-item" href="#">
+          <i data-lucide="chart-no-axes-column"></i>
+          <span>Reports</span>
+        </a>
+
+        <a class="nav-item" href="#">
+          <i data-lucide="settings"></i>
+          <span>Settings</span>
+        </a>
+
+        <a class="nav-item" href="#">
+          <i data-lucide="circle-help"></i>
+          <span>Support</span>
+        </a>
+
+      </nav>
+
+    </aside>
+
+    <main class="employees-main">
+
+      <header class="employees-header">
+
+        <div>
+          <p class="eyebrow">EMPLOYEE MANAGEMENT</p>
+          <h2>Employees</h2>
+          <p>
+            View, search and manage employee records.
+          </p>
+        </div>
+
+        <a
+    id="addEmployeeButton"
+    class="primary-button"
+    href="edit-employee.html"
+>
+    <i data-lucide="user-plus"></i>
+
+    Add Employee
+</a>
+
+      </header>
+
+      <section class="employee-summary-grid">
+
+        <article class="employee-summary-card">
+          <span>Total Employees</span>
+          <strong id="employeeTotalCount">0</strong>
+        </article>
+
+        <article class="employee-summary-card">
+          <span>Active</span>
+          <strong id="employeeActiveCount">0</strong>
+        </article>
+
+        <article class="employee-summary-card">
+          <span>On Leave</span>
+          <strong id="employeeLeaveCount">0</strong>
+        </article>
+
+        <article class="employee-summary-card">
+          <span>Inactive</span>
+          <strong id="employeeInactiveCount">0</strong>
+        </article>
+        <article class="employee-summary-card employee-summary-card-payroll">
+    <span>Monthly Payroll</span>
+    <strong id="employeePayrollTotal">JMD 0.00</strong>
+</article>
+
+      </section>
+
+      <section class="employee-directory-card">
+
+        <div class="directory-toolbar">
+
+          <label class="search-field">
+            <i data-lucide="search"></i>
+
+            <input
+              id="employeeSearch"
+              type="search"
+              placeholder="Search employees..."
+            >
+          </label>
+
+          <select id="departmentFilter">
+            <option value="">All Departments</option>
+          </select>
+
+          <select id="statusFilter">
+            <option value="">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="on leave">On Leave</option>
+            <option value="inactive">Inactive</option>
+            <option value="archived">Archived</option>
+          </select>
+
+        </div>
+
+        <div class="employee-table-wrap">
+
+          <table class="employee-table">
+
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Department</th>
+                <th>Gross Salary</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody id="employeeTableBody">
+
+              <tr>
+                <td colspan="5">
+                  <div class="table-message">
+                    Loading employees...
+                  </div>
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+<div id="confirmationModal" class="confirmation-modal hidden">
+
+    <div class="confirmation-card">
+
+        <h2 id="confirmationTitle">
+            Confirm Action
+        </h2>
+
+        <p id="confirmationMessage">
+            Are you sure?
+        </p>
+
+        <div class="confirmation-buttons">
+
+            <button
+                id="confirmationCancelButton"
+                class="secondary-button"
+            >
+                Cancel
+            </button>
+
+            <button
+                id="confirmationConfirmButton"
+                class="danger-button"
+            >
+                Confirm
+            </button>
+
+        </div>
+
+    </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="js/ui.js"></script>
+<script src="js/employees.js"></script>
+  <script>
+    lucide.createIcons();
+  </script>
+
+
+</body>
+</html>

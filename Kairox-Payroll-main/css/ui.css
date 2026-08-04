@@ -1,0 +1,280 @@
+:root {
+  --toast-purple: #5b2c83;
+  --toast-success: #087b4d;
+  --toast-error: #b91c1c;
+  --toast-warning: #b45309;
+  --toast-info: #2563eb;
+}
+
+.toast-container {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  z-index: 9999;
+
+  display: grid;
+  gap: 12px;
+
+  width: min(380px, calc(100% - 32px));
+  pointer-events: none;
+}
+
+.toast {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+
+  padding: 15px 16px;
+
+  color: #242033;
+  background: #ffffff;
+
+  border: 1px solid #e8e5ee;
+  border-left: 5px solid var(--toast-purple);
+  border-radius: 12px;
+
+  box-shadow:
+    0 14px 34px rgba(31, 18, 65, 0.16);
+
+  pointer-events: auto;
+
+  animation:
+    toast-slide-in 220ms ease-out both;
+}
+
+.toast.toast-success {
+  border-left-color: var(--toast-success);
+}
+
+.toast.toast-error {
+  border-left-color: var(--toast-error);
+}
+
+.toast.toast-warning {
+  border-left-color: var(--toast-warning);
+}
+
+.toast.toast-info {
+  border-left-color: var(--toast-info);
+}
+
+.toast-icon {
+  display: grid;
+  place-items: center;
+
+  width: 28px;
+  height: 28px;
+
+  border-radius: 50%;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.toast-success .toast-icon {
+  color: var(--toast-success);
+  background: #e6f8ef;
+}
+
+.toast-error .toast-icon {
+  color: var(--toast-error);
+  background: #feecec;
+}
+
+.toast-warning .toast-icon {
+  color: var(--toast-warning);
+  background: #fff4e5;
+}
+
+.toast-info .toast-icon {
+  color: var(--toast-info);
+  background: #eaf2ff;
+}
+
+.toast-content {
+  min-width: 0;
+}
+
+.toast-title {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.toast-message {
+  margin: 0;
+  color: #706b7e;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.toast-close {
+  display: grid;
+  place-items: center;
+
+  width: 28px;
+  height: 28px;
+
+  padding: 0;
+
+  color: #888394;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+
+  cursor: pointer;
+}
+
+.toast-close:hover {
+  color: #312a42;
+  background: #f4f2f7;
+}
+
+.toast.toast-leaving {
+  animation:
+    toast-slide-out 180ms ease-in both;
+}
+
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes toast-slide-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+@media (max-width: 620px) {
+  .toast-container {
+    top: 14px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+  }
+}
+.hidden {
+  display: none !important;
+}
+
+.confirmation-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+
+  display: grid;
+  place-items: center;
+
+  padding: 20px;
+
+  background: rgba(20, 13, 38, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.confirmation-card {
+  width: min(440px, 100%);
+  padding: 26px;
+
+  background: #ffffff;
+  border: 1px solid #e8e5ee;
+  border-radius: 18px;
+
+  box-shadow:
+    0 24px 60px rgba(31, 18, 65, 0.24);
+
+  animation:
+    confirmation-pop-in 180ms ease-out both;
+}
+
+.confirmation-card h2 {
+  margin: 0 0 10px;
+
+  color: #241a38;
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.confirmation-card p {
+  margin: 0;
+
+  color: #6f687d;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.confirmation-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  margin-top: 24px;
+}
+
+.confirmation-buttons button {
+  min-width: 108px;
+  min-height: 42px;
+  padding: 10px 16px;
+
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.confirmation-buttons .secondary-button {
+  color: #4b2e83;
+  background: #ffffff;
+  border: 1px solid #d8cee8;
+}
+
+.confirmation-buttons .secondary-button:hover {
+  background: #f7f3fb;
+}
+
+.danger-button {
+  color: #ffffff;
+  background: #b91c1c;
+  border: 1px solid #b91c1c;
+}
+
+.danger-button:hover {
+  background: #991b1b;
+}
+
+@keyframes confirmation-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 520px) {
+  .confirmation-buttons {
+    flex-direction: column-reverse;
+  }
+
+  .confirmation-buttons button {
+    width: 100%;
+  }
+}

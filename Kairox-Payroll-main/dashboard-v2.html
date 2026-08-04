@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Kairox Payroll Dashboard</title>
+
+  <link
+    rel="stylesheet"
+    href="css/dashboard-v2.css"
+  >
+</head>
+
+<body>
+
+  <div class="dashboard-layout">
+
+    <!-- Purple sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">K</div>
+
+        <div>
+          <h1>KAIROX</h1>
+          <p>Payroll</p>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active">
+          <i class="nav-icon" data-lucide="house"></i>
+          <span>Home</span>
+        </button>
+
+        <a
+    class="nav-item"
+    href="employees-v2.html"
+>
+    <i class="nav-icon" data-lucide="users"></i>
+    <span>Employees</span>
+</a>
+
+        <button class="nav-item">
+          <i class="nav-icon" data-lucide="circle-dollar-sign"></i>
+          <span>Payroll</span>
+        </button>
+
+        <button class="nav-item">
+          <i class="nav-icon" data-lucide="receipt-text"></i>
+          <span>Payslips</span>
+        </button>
+
+        <button class="nav-item">
+          <i class="nav-icon" data-lucide="shield-check"></i>
+          <span>Compliance</span>
+        </button>
+
+        <button class="nav-item">
+          <i class="nav-icon" data-lucide="chart-no-axes-column"></i>
+          <span>Reports</span>
+        </button>
+
+        <button class="nav-item">
+          <i class="nav-icon" data-lucide="folder"></i>
+          <span>Documents</span>
+        </button>
+
+        <button class="nav-item">
+          <i class="nav-icon" data-lucide="settings"></i>
+          <span>Settings</span>
+        </button>
+
+        <button class="nav-item">
+          <i class="nav-icon" data-lucide="circle-help"></i>
+          <span>Support</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <button class="workspace-button">
+          <span>Kairox Payroll</span>
+          <span>⌄</span>
+        </button>
+
+        <div class="user-card">
+          <div class="user-avatar">CB</div>
+
+          <div class="user-details">
+            <strong>Chari Brooks</strong>
+            <span>Administrator</span>
+          </div>
+
+          <span>⌄</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main dashboard area -->
+    <main class="dashboard-main">
+
+      <header class="topbar">
+        <div>
+          <h2>Good evening, Chari 👋</h2>
+          <p>Here’s what’s happening with your payroll today.</p>
+        </div>
+
+        <div class="topbar-actions">
+          <input
+            type="search"
+            placeholder="Search anything..."
+          >
+
+          <button
+            class="notification-button"
+            aria-label="Notifications"
+          >
+            ♢
+            <span class="notification-count">3</span>
+          </button>
+
+          <div class="topbar-avatar">CB</div>
+        </div>
+      </header>
+
+      <section class="summary-grid">
+
+  <article class="summary-card">
+    <div class="summary-icon purple">
+      <i data-lucide="users"></i>
+    </div>
+
+    <div>
+      <p>Total Employees</p>
+      <h3 id="totalEmployeesCount">0</h3>
+<span id="employeeStatusSummary">Loading employee data...</span>
+    </div>
+  </article>
+
+  <article class="summary-card">
+    <div class="summary-icon green">
+      <i data-lucide="badge-dollar-sign"></i>
+    </div>
+
+    <div>
+      <p>Payroll Status</p>
+      <h3 class="success-text">Ready</h3>
+      <span>Current payroll period</span>
+    </div>
+  </article>
+
+  <article class="summary-card">
+    <div class="summary-icon orange">
+      <i data-lucide="calendar-days"></i>
+    </div>
+
+    <div>
+      <p>Next Payroll Due</p>
+      <h3>2 Days</h3>
+      <span>Next scheduled payroll</span>
+    </div>
+  </article>
+
+  <article class="summary-card">
+    <div class="summary-icon blue">
+      <i data-lucide="file-check-2"></i>
+    </div>
+
+    <div>
+      <p>Upcoming Filings</p>
+      <h3>2</h3>
+      <span>Due within 7 days</span>
+    </div>
+  </article>
+
+</section>
+
+      <section class="middle-grid">
+
+        <article class="panel payroll-overview">
+          <div class="panel-header">
+            <h3>Payroll Overview</h3>
+
+            <select>
+              <option>This Month</option>
+              <option>Last 3 Months</option>
+              <option>This Year</option>
+            </select>
+          </div>
+
+          <p class="panel-label">Total Payroll Cost</p>
+          <h2><h2 id="totalPayrollCost">JMD 0.00</h2></h2>
+
+          <div class="chart-container">
+    <canvas id="payrollChart"></canvas>
+</div>
+        </article>
+
+        <article class="panel tasks-panel">
+          <div class="panel-header">
+            <h3>Upcoming Tasks</h3>
+            <button class="text-button">View All</button>
+          </div>
+
+          <div class="task-item">
+            <span class="task-dot purple-dot"></span>
+
+            <div>
+              <strong>Run Current Payroll</strong>
+              <p>Due in 2 days</p>
+            </div>
+
+            <span class="priority high">High</span>
+          </div>
+
+          <div class="task-item">
+            <span class="task-dot orange-dot"></span>
+
+            <div>
+              <strong>Submit NIS Return</strong>
+              <p>Due in 5 days</p>
+            </div>
+
+            <span class="priority medium">Medium</span>
+          </div>
+
+          <div class="task-item">
+            <span class="task-dot green-dot"></span>
+
+            <div>
+              <strong>Review New Employee</strong>
+              <p>Recently added</p>
+            </div>
+
+            <span class="priority low">Low</span>
+          </div>
+
+          <div class="task-item">
+            <span class="task-dot blue-dot"></span>
+
+            <div>
+              <strong>Generate Payslips</strong>
+              <p>For all active employees</p>
+            </div>
+
+            <span class="priority medium">Medium</span>
+          </div>
+        </article>
+
+      </section>
+
+      <section class="bottom-grid">
+
+        <article class="panel">
+          <div class="panel-header">
+            <h3>Recent Activity</h3>
+            <button class="text-button">View All</button>
+          </div>
+          <div id="recentActivityList">
+    <p class="activity-loading">
+        Loading recent activity...
+    </p>
+</div>    
+    
+        </article>
+
+        <article class="panel employee-summary">
+          <h3>Employee Summary</h3>
+
+          <div class="employee-chart">
+            <div class="donut-placeholder">
+              <strong>24</strong>
+              <span>Total</span>
+            </div>
+
+            <div class="employee-legend">
+              <p><span class="legend purple-bg"></span>Active: 20</p>
+              <p><span class="legend teal-bg"></span>On Leave: 2</p>
+              <p><span class="legend orange-bg"></span>Inactive: 2</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel quick-actions">
+          <h3>Quick Actions</h3>
+
+          <div class="quick-action-grid">
+            <button>Add Employee</button>
+            <button>Run Payroll</button>
+            <button>Generate Payslips</button>
+            <button>View Reports</button>
+            <button>Company Settings</button>
+            <button>Upload Document</button>
+          </div>
+        </article>
+
+      </section>
+
+      <footer class="dashboard-footer">
+        <span>© 2026 Kairox Technologies</span>
+        <span>Version 1.0.0</span>
+      </footer>
+
+    </main>
+
+  </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<script src="js/charts.js"></script>
+<script>
+  lucide.createIcons();
+  async function loadEmployeeCount() {
+  const totalElement =
+    document.getElementById("totalEmployeesCount");
+
+  const summaryElement =
+    document.getElementById("employeeStatusSummary");
+
+  if (!totalElement || !summaryElement) {
+    console.error("Employee summary elements were not found.");
+    return;
+  }
+
+  const workspace = "kairox-exchange";
+
+  const { count, error } = await supabaseClient
+    .from("employees")
+    .select("*", { count: "exact", head: true })
+    .eq("workspace", workspace);
+
+
+
+  if (error) {
+    console.error("Could not load employee count:", error);
+    totalElement.textContent = "—";
+    summaryElement.textContent =
+      "Could not load employee data";
+    return;
+  }
+
+  const employeeCount = count ?? 0;
+
+  totalElement.textContent = employeeCount;
+
+  summaryElement.textContent =
+    employeeCount === 1
+      ? "1 employee on record"
+      : `${employeeCount} employees on record`;
+}
+
+loadEmployeeCount();
+async function loadPayrollTotal() {
+  const totalPayrollElement =
+    document.getElementById("totalPayrollCost");
+
+  if (!totalPayrollElement) {
+    console.error("Payroll total element was not found.");
+    return;
+  }
+
+  const workspace = "kairox-exchange";
+
+  const { data, error } = await supabaseClient
+    .from("employees")
+    .select("gross")
+    .eq("workspace", workspace);
+
+  if (error) {
+    console.error("Could not load payroll total:", error);
+    totalPayrollElement.textContent = "JMD —";
+    return;
+  }
+
+  const totalPayroll = (data || []).reduce(
+    (total, employee) =>
+      total + Number(employee.gross || 0),
+    0
+  );
+
+  totalPayrollElement.textContent =
+    `JMD ${totalPayroll.toLocaleString("en-JM", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
+}
+
+loadPayrollTotal();
+async function recordDashboardVisit() {
+  const workspace = "kairox-exchange";
+
+  const { error } = await supabaseClient
+    .from("activity_logs")
+    .insert({
+      workspace,
+      action: "Dashboard opened",
+      details: "The payroll dashboard was viewed."
+    });
+
+  if (error) {
+    console.error("Could not record dashboard activity:", error);
+  }
+}
+
+//recordDashboardVisit();
+async function loadRecentActivity() {
+  const activityList =
+    document.getElementById("recentActivityList");
+
+  if (!activityList) {
+    return;
+  }
+
+  const workspace = "kairox-exchange";
+
+  const { data, error } = await supabaseClient
+    .from("activity_logs")
+    .select("action, details, created_at")
+    .eq("workspace", workspace)
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  if (error) {
+    console.error("Could not load recent activity:", error);
+    activityList.innerHTML =
+      "<p class='activity-loading'>Could not load recent activity.</p>";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    activityList.innerHTML =
+      "<p class='activity-loading'>No activity recorded yet.</p>";
+    return;
+  }
+
+  activityList.innerHTML = data
+    .map((item) => {
+      const activityDate = new Date(item.created_at);
+
+      const timeText = activityDate.toLocaleString("en-JM", {
+        dateStyle: "medium",
+        timeStyle: "short"
+      });
+
+      return `
+        <div class="activity-item">
+          <div class="activity-icon success">
+            <i data-lucide="check"></i>
+          </div>
+
+          <div>
+            <strong>${item.action}</strong>
+            <p>${item.details || ""}</p>
+          </div>
+
+          <time>${timeText}</time>
+        </div>
+      `;
+    })
+    .join("");
+
+  lucide.createIcons();
+}
+
+loadRecentActivity();
+
+  
+</script>
+
+<script src="js/charts.js"></script>
+
+</body>
+</html>

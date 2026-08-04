@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Employee Profile | Kairox Payroll</title>
+
+  <link
+    rel="stylesheet"
+    href="css/employee-profile.css"
+  >
+</head>
+
+<body>
+
+  <main class="employee-profile-page">
+
+    <header class="employee-hero">
+
+  <a
+    href="employees-v2.html"
+    class="back-link"
+  >
+    ← Back to Employees
+  </a>
+
+  <div class="employee-hero-card">
+
+    <div class="employee-hero-photo-wrap">
+
+      <img
+        id="heroEmployeePhoto"
+        class="employee-hero-photo"
+        alt="Employee profile photo"
+      >
+
+      <div
+        id="heroEmployeeInitials"
+        class="employee-hero-initials"
+      >
+        —
+      </div>
+
+    </div>
+
+    <div class="employee-hero-content">
+
+      <p class="hero-label">
+        EMPLOYEE PROFILE
+      </p>
+
+      <div class="employee-hero-title-row">
+
+  <div>
+
+    <div class="employee-name-row">
+
+      <h1 id="heroEmployeeName">
+        Loading employee...
+      </h1>
+
+      <span
+        id="heroEmployeeStatus"
+        class="hero-status"
+      >
+        —
+      </span>
+
+    </div>
+
+    <p
+      id="heroEmployeeSubtitle"
+      class="hero-subtitle"
+    >
+      —
+    </p>
+
+  </div>
+
+</div>
+      <div class="employee-hero-meta">
+
+        <span id="heroEmployeeDepartment">
+          Department not assigned
+        </span>
+
+        <span id="heroEmployeeStartDate">
+          Start date not assigned
+        </span>
+
+      </div>
+
+    </div>
+
+    <div class="hero-buttons">
+
+      <button
+        class="secondary-button"
+        type="button"
+      >
+        Payroll
+      </button>
+
+      <a
+        class="secondary-button"
+        href="#employeeDocumentsSection"
+      >
+        Documents
+      </a>
+
+      <a
+        id="editEmployeeLink"
+        class="edit-button"
+        href="#"
+      >
+        Edit Employee
+      </a>
+
+    </div>
+
+  </div>
+
+</header>
+      
+    <section class="profile-grid">
+
+      
+      <section class="profile-details">
+
+        <article class="detail-card">
+          <h2>Personal Information</h2>
+
+          <div class="detail-grid">
+            <div>
+              <span>Email</span>
+              <strong id="employeeEmail">—</strong>
+            </div>
+
+            <div>
+              <span>Phone</span>
+              <strong id="employeePhone">—</strong>
+            </div>
+
+            <div>
+              <span>TRN</span>
+              <strong id="employeeTrn">—</strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="detail-card">
+          <h2>Employment Details</h2>
+          <div class="salary-banner">
+
+    <small>MONTHLY GROSS SALARY</small>
+
+    <h1>JMD 400,000</h1>
+
+</div>
+
+          <div class="detail-grid">
+            <div>
+              <span>Job Title</span>
+              <strong id="employmentTitle">—</strong>
+            </div>
+
+            <div>
+              <span>Department</span>
+              <strong id="employmentDepartment">—</strong>
+            </div>
+
+            <div>
+              <span>Employment Status</span>
+              <strong id="employmentStatus">—</strong>
+            </div>
+
+            <div>
+              <span>Start Date</span>
+              <strong id="employmentStartDate">—</strong>
+            </div>
+
+            <div>
+              <span>Gross Salary</span>
+              <strong id="employeeGross">JMD 0.00</strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="detail-card">
+          <h2>Employee Photo</h2>
+
+          <p class="muted">
+  Upload or replace this employee’s profile photo.
+</p>
+
+          <input
+            id="employeePhotoInput"
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+          >
+          <button
+  id="uploadEmployeePhotoButton"
+  class="edit-button"
+  type="button"
+>
+  Upload Photo
+</button>
+
+<p
+  id="employeePhotoMessage"
+  class="muted"
+></p>
+        </article>
+        <article
+  id="employeeDocumentsSection"
+  class="detail-card"
+>
+  <div class="panel-header">
+    <div>
+      <h2>Employee Documents</h2>
+      <p class="muted">
+        Upload and manage documents linked to this employee.
+      </p>
+    </div>
+  </div>
+  <hr class="section-divider">
+
+<div class="documents-library-header">
+    <div>
+        <h3>Stored Documents</h3>
+        <p class="muted">
+            All documents uploaded for this employee.
+        </p>
+    </div>
+</div>
+  <div class="document-upload-grid">
+
+    <label>
+      Document Name
+      <input
+        id="employeeDocumentName"
+        type="text"
+        placeholder="e.g. Employment Contract"
+      >
+    </label>
+
+    <label>
+      Document Type
+      <select id="employeeDocumentType">
+        <option value="">Select type</option>
+        <option value="employment contract">
+          Employment Contract
+        </option>
+        <option value="trn">
+          TRN
+        </option>
+        <option value="nis">
+          NIS
+        </option>
+        <option value="passport">
+          Passport
+        </option>
+        <option value="bank details">
+          Bank Details
+        </option>
+        <option value="qualification">
+          Qualification
+        </option>
+        <option value="other">
+          Other
+        </option>
+      </select>
+    </label>
+
+    <label>
+      Choose File
+      <input
+        id="employeeDocumentInput"
+        type="file"
+        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+      >
+    </label>
+
+  </div>
+
+  <button
+    id="uploadEmployeeDocumentButton"
+    class="edit-button"
+    type="button"
+  >
+    Upload Document
+  </button>
+
+  <p
+    id="employeeDocumentMessage"
+    class="muted"
+  ></p>
+
+  <div id="employeeDocumentList">
+    <p class="muted">
+      Loading employee documents...
+    </p>
+  </div>
+</article>
+<article class="detail-card" id="employeeNotesSection">
+
+  <div class="panel-header">
+    <div>
+      <h2>Employee Notes</h2>
+      <p class="muted">
+        Record important HR updates and employee-related comments.
+      </p>
+    </div>
+  </div>
+
+  <div class="employee-note-form">
+
+    <label for="employeeNoteInput">
+      Add Note
+    </label>
+
+    <textarea
+      id="employeeNoteInput"
+      rows="4"
+      placeholder="Enter an employee note..."
+    ></textarea>
+
+    <button
+      id="addEmployeeNoteButton"
+      class="edit-button"
+      type="button"
+    >
+      Add Note
+    </button>
+
+    <p
+      id="employeeNoteMessage"
+      class="muted"
+    ></p>
+
+  </div>
+
+  <hr class="section-divider">
+
+  <div id="employeeNotesList" class="employee-notes-list">
+    <p class="muted">
+      Loading employee notes...
+    </p>
+  </div>
+
+</article>
+<article class="detail-card" id="employeeActivitySection">
+
+  <div class="panel-header">
+    <div>
+      <h2>Employee Activity</h2>
+      <p class="muted">
+        A record of important actions and updates for this employee.
+      </p>
+    </div>
+  </div>
+
+  <div
+    id="employeeActivityList"
+    class="employee-activity-list"
+  >
+    <p class="muted">
+      Loading employee activity...
+    </p>
+  </div>
+
+</article>
+      </section>
+
+    </section>
+
+  </main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/employee-profile.js"></script>
+
+</body>
+</html>

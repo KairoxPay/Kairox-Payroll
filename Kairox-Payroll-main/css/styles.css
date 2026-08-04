@@ -1,0 +1,43 @@
+:root { --brand:#1e5631; --ink:#1c2321; --muted:#6b7280; --border:#d8dee2; --danger:#b3261e; --warn:#8a5a00; --warn-bg:#fff6e5; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin:0; background:#f5f6f7; color:var(--ink); }
+  header { background: var(--brand); color:white; padding:18px 24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+  header h1 { margin:0; font-size:20px; }
+  .no-print button.tab {
+    background: rgba(255,255,255,0.15); color:white; border:1px solid rgba(255,255,255,0.4);
+    padding:8px 16px; border-radius:6px; cursor:pointer; font-size:14px; margin-right:6px;
+  }
+  .no-print button.tab.active { background:white; color:var(--brand); font-weight:600; }
+  main { max-width: 1000px; margin: 24px auto; padding: 0 16px; }
+  .card { background:white; border:1px solid var(--border); border-radius:10px; padding:20px; margin-bottom:20px; }
+  .card h2 { margin-top:0; font-size:16px; color:var(--brand); }
+  .warn { background: var(--warn-bg); border:1px solid #f0d38a; color: var(--warn); border-radius:8px; padding:12px 16px; font-size:13px; margin-bottom:20px; }
+  .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap:12px; }
+  label { display:block; font-size:12px; color:var(--muted); margin-bottom:4px; }
+  input, select { width:100%; padding:8px; border:1px solid var(--border); border-radius:6px; font-size:14px; }
+  button { background: var(--brand); color:white; border:none; border-radius:6px; padding:9px 16px; font-size:14px; cursor:pointer; }
+  button.secondary { background:white; color:var(--brand); border:1px solid var(--brand); }
+  button.danger { background:white; color:var(--danger); border:1px solid var(--danger); }
+  table { width:100%; border-collapse:collapse; margin-top:10px; }
+  th, td { text-align:left; padding:8px; border-bottom:1px solid var(--border); font-size:13px; }
+  th { color:var(--muted); font-weight:600; }
+  .row-actions button { margin-right:6px; padding:5px 10px; font-size:12px; }
+  .line { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed var(--border); font-size:14px; }
+  .line.total { font-weight:700; border-bottom:none; border-top:2px solid var(--ink); margin-top:8px; padding-top:10px; }
+  .section-title { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.05em; margin:16px 0 4px; }
+  .muted { color:var(--muted); font-size:12px; }
+  .tag { display:inline-block; background:var(--brand); color:white; font-size:11px; padding:2px 6px; border-radius:4px; margin-left:6px; }
+  .payslip-header { display:flex; justify-content:space-between; border-bottom:2px solid var(--brand); padding-bottom:12px; margin-bottom:16px; }
+  .payslip-header h2 { color:var(--brand); margin:0 0 4px 0; }
+  .view { display:none; }
+  .view.active { display:block; }
+  #loginScreen, #resetPasswordScreen { max-width:360px; margin:80px auto; }
+  #loginError, #resetPasswordError { color:var(--danger); font-size:13px; margin-top:8px; min-height:18px; }
+  #loginMessage, #resetPasswordMessage { color:var(--brand); font-size:13px; margin-top:8px; min-height:18px; }
+  .link-button { background:none; color:var(--brand); border:none; padding:0; font-size:13px; text-decoration:underline; cursor:pointer; }
+  @media print {
+    header, .no-print { display:none !important; }
+    body { background:white; } main { margin:0; max-width:100%; }
+    .view { display:none !important; }
+    .view.printing { display:block !important; }
+  
