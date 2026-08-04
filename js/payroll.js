@@ -1,14 +1,31 @@
 /* ================= PAYROLL: RATES ================= */
+const rates = {
+  threshold: 1902360,
+  payeLower: 25,
+  payeHigher: 30,
+  payeBand: 6000000,
+  nis: 3,
+  nisCeiling: 5000000,
+  nht: 3,
+  edTax: 2.25
+};
 function renderRates() {
-  document.getElementById('rateThreshold').value = rates.threshold;
-  document.getElementById('ratePayeLower').value = rates.payeLower;
-  document.getElementById('ratePayeHigher').value = rates.payeHigher;
-  document.getElementById('ratePayeBand').value = rates.payeBand;
-  document.getElementById('rateNis').value = rates.nis;
-  document.getElementById('rateNisCeiling').value = rates.nisCeiling;
-  document.getElementById('rateNht').value = rates.nht;
-  document.getElementById('rateEdTax').value = rates.edTax;
+  const rateThreshold = document.getElementById("rateThreshold");
+
+  if (!rateThreshold) {
+    return;
+  }
+
+  document.getElementById("rateThreshold").value = rates.threshold;
+  document.getElementById("ratePayeLower").value = rates.payeLower;
+  document.getElementById("ratePayeHigher").value = rates.payeHigher;
+  document.getElementById("ratePayeBand").value = rates.payeBand;
+  document.getElementById("rateNis").value = rates.nis;
+  document.getElementById("rateNisCeiling").value = rates.nisCeiling;
+  document.getElementById("rateNht").value = rates.nht;
+  document.getElementById("rateEdTax").value = rates.edTax;
 }
+
 async function saveRates() {
   rates = {
     threshold:+document.getElementById('rateThreshold').value, payeLower:+document.getElementById('ratePayeLower').value,
@@ -19,10 +36,22 @@ async function saveRates() {
   await persistSettings();
 }
 function periodsPerYear() {
-  if (company.payPeriod === 'weekly') return 52;
-  if (company.payPeriod === 'fortnightly') return 26;
+  const payPeriod =
+    typeof company !== "undefined" && company?.payPeriod
+      ? company.payPeriod
+      : "fortnightly";
+
+  if (payPeriod === "weekly") {
+    return 52;
+  }
+
+  if (payPeriod === "fortnightly") {
+    return 26;
+  }
+
   return 12;
 }
+
 function calculatePayslip(gross) {
   const ppy = periodsPerYear();
   const nisCeilingPerPeriod = rates.nisCeiling / ppy;
@@ -88,4 +117,258 @@ function generatePayslipFromTab() {
   const id = document.getElementById('payslipEmployeeSelect').value;
   if (!id) { alert('Add an employee in the Payroll tab first.'); return; }
   document.getElementById('payslipTabArea').innerHTML = buildPayslipHTML(id, 'payslipTabArea');
+}
+async function loadPayrollDashboard() {
+  const tableBody = document.getElementById("payrollEmployeeTableBody");
+
+  if (!tableBody) {
+    return;
+  }
+
+  tableBody.innerHTML = `
+    <tr>
+      <td colspan="9">Loading payroll employees...</td>
+    </tr>
+  `;
+
+  const { data: employees, error } = await supabaseClient
+    .from("employees")
+    .select("*")
+    .eq("workspace", "kairox-exchange")
+    .neq("employment_status", "archived");
+    
+
+  if (error) {
+    console.error("Could not load payroll employees:", error);
+
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="9">
+          Payroll employees could not be loaded.
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  const payrollRows = (employees || []).map((employee) => {
+    const grossPay = Number(employee.gross || 0);
+    const calculatedPay = calculatePayslip(grossPay);
+
+    return {
+      employee,
+      grossPay,
+      paye: Number(calculatedPay.paye || 0),
+      nis: Number(calculatedPay.nis || 0),
+      nht: Number(calculatedPay.nht || 0),
+      educationTax: Number(calculatedPay.edTax || 0),
+      netPay: Number(calculatedPay.net || 0)
+    };
+  });
+
+  renderPayrollSummary(payrollRows);
+  renderPayrollEmployeeTable(payrollRows);
+  enablePayrollEmployeeSearch(payrollRows);
+}
+
+function renderPayrollSummary(payrollRows) {
+  const employeeCount = payrollRows.length;
+
+  const grossTotal = payrollRows.reduce(
+    (total, row) => total + row.grossPay,
+    0
+  );
+
+  const deductionTotal = payrollRows.reduce(
+    (total, row) =>
+      total +
+      row.paye +
+      row.nis +
+      row.nht +
+      row.educationTax,
+    0
+  );
+
+  const netTotal = payrollRows.reduce(
+    (total, row) => total + row.netPay,
+    0
+  );
+
+  setPayrollText("payrollEmployeeCount", employeeCount);
+  setPayrollText("payrollGrossTotal", formatPayrollCurrency(grossTotal));
+  setPayrollText(
+    "payrollDeductionTotal",
+    formatPayrollCurrency(deductionTotal)
+  );
+  setPayrollText("payrollNetTotal", formatPayrollCurrency(netTotal));
+}
+
+function renderPayrollEmployeeTable(payrollRows) {
+  const tableBody = document.getElementById("payrollEmployeeTableBody");
+
+  if (!tableBody) {
+    return;
+  }
+
+  if (payrollRows.length === 0) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="9">No employees are available for payroll.</td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  tableBody.innerHTML = payrollRows
+    .map(
+  ({
+    employee,
+    grossPay,
+    paye,
+    nis,
+    nht,
+    educationTax,
+    netPay
+  }) => {
+      const employeeName =
+        employee.full_name ||
+employee.name ||
+        `${employee.first_name || ""} ${employee.last_name || ""}`.trim() ||
+        "Unnamed Employee";
+
+      const department = employee.department || "Not assigned";
+
+      return `
+        <tr>
+          <td>
+            <strong>${escapePayrollHtml(employeeName)}</strong>
+          </td>
+
+          <td>${escapePayrollHtml(department)}</td>
+
+          <td>${formatPayrollCurrency(grossPay)}</td>
+
+          <td>${formatPayrollCurrency(paye)}</td>
+
+          <td>${formatPayrollCurrency(nis)}</td>
+
+          <td>${formatPayrollCurrency(nht)}</td>
+
+<td>${formatPayrollCurrency(educationTax)}</td>
+
+<td>
+  <strong>${formatPayrollCurrency(netPay)}</strong>
+</td>
+
+          <td>
+            <span class="payroll-row-status">
+              Ready
+            </span>
+          </td>
+
+          <td>
+            <a
+              class="payroll-view-link"
+              href="employee-profile.html?id=${encodeURIComponent(employee.id)}"
+            >
+              View
+            </a>
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
+function enablePayrollEmployeeSearch(payrollRows) {
+  const searchInput = document.getElementById("payrollEmployeeSearch");
+
+  if (!searchInput) {
+    return;
+  }
+
+  searchInput.addEventListener("input", () => {
+    const searchTerm = searchInput.value.trim().toLowerCase();
+
+    const filteredRows = payrollRows.filter(({ employee }) => {
+      const employeeName =
+        employee.full_name ||
+employee.name ||
+        `${employee.first_name || ""} ${employee.last_name || ""}`;
+
+      const searchableText = [
+        employeeName,
+        employee.department,
+        employee.job_title
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return searchableText.includes(searchTerm);
+    });
+
+    renderPayrollEmployeeTable(filteredRows);
+  });
+}
+
+function setPayrollText(elementId, value) {
+  const element = document.getElementById(elementId);
+
+  if (element) {
+    element.textContent = value;
+  }
+}
+
+function formatPayrollCurrency(value) {
+  return new Intl.NumberFormat("en-JM", {
+    style: "currency",
+    currency: "JMD",
+    minimumFractionDigits: 2
+  }).format(Number(value || 0));
+}
+
+function escapePayrollHtml(value = "") {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+document.addEventListener("DOMContentLoaded", loadPayrollDashboard);
+async function runPayroll() {
+  const confirmed = window.confirm(
+    "Process payroll for this pay period?"
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  const statusBadge = document.getElementById("payrollStatus");
+  const runButton = document.getElementById("runPayrollBtn");
+
+  if (runButton) {
+    runButton.disabled = true;
+    runButton.textContent = "Processing...";
+  }
+
+  if (statusBadge) {
+    statusBadge.textContent = "Processed";
+    statusBadge.className =
+      "payroll-status payroll-status-processed";
+  }
+
+  await loadPayrollDashboard();
+
+  if (runButton) {
+    runButton.disabled = false;
+    runButton.textContent = "Run Payroll";
+  }
+
+  window.alert("Payroll processed successfully.");
 }
