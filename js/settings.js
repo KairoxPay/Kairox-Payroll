@@ -1,0 +1,1 @@
+// Kairox Payroll settings functions
