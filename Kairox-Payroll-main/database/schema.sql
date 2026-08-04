@@ -1,1 +1,0 @@
--- Kairox Payroll database schema
