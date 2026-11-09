@@ -95,6 +95,11 @@ function pdRender() {
   pdEl("statNoMgrCard").className = `stat-card ${noMgr.length && !isTeam ? "warn" : ""}`.trim();
   pdEl("statManagers").textContent = String(new Set(pdPeople.filter((p) => p.manager_id).map((p) => p.manager_id)).size);
 
+  // The page is called what the sidebar calls it: "Team & access" for payroll staff, "My team" for a manager, "People" for HR.
+  const heading = isTeam ? "My team" : ["admin", "director", "payroll", "viewer"].includes(pdRole) ? "Team & access" : "People";
+  const pageTitle = document.querySelector(".topbar h2");
+  if (pageTitle) pageTitle.textContent = heading;
+  document.title = `Kairox Pay | ${heading}`;
   pdEl("peopleCard").querySelector("h2, h3").textContent = isTeam ? "My team" : "People";
   pdEl("peopleCard").querySelector(".page-card-head p").textContent = isTeam
     ? "The people who report to you. You approve their leave on the Leave page."

@@ -12,6 +12,7 @@ const ME_MONTHS = ["January", "February", "March", "April", "May", "June", "July
 let meWorkspace = kairoxWorkspaceId();
 let me = null;
 let mePayslips = [];
+let mePay = null;
 let meTypes = [];
 let meBalances = [];
 let meRequests = [];
@@ -105,10 +106,15 @@ function meRenderProfile() {
     ["Reports to", me.manager_name], ["Started", meFmt(me.start_date)], ["Company", company.name]
   ];
   const editable = meActive() && meOn("details");
+  // Their own monthly gross salary (the database only ever returns the signed-in employee's own figure).
+  const salary = mePay
+    ? `<div class="me-pay" style="display:inline-flex;flex-direction:column;gap:4px;margin:0 0 20px;padding:16px 22px;border-radius:14px;color:#fff;background:linear-gradient(135deg,#5b2c83,#2cb8b3)"><span style="font-size:13px;font-weight:600;opacity:.85">Monthly gross salary</span><strong style="font-size:26px;letter-spacing:-.02em">${meMoney(mePay.gross)}</strong></div>`
+    : "";
   const field = (id, label, value, attrs = "") =>
     `<div class="field" style="margin-bottom:12px"><label for="${id}">${label}</label><input id="${id}" type="text" value="${meEsc(value || "")}" ${attrs}${editable ? "" : " disabled"}></div>`;
 
   meEl("meProfile").innerHTML =
+    salary +
     `<dl style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px 24px;margin:0 0 20px">${facts
       .map(([k, v]) => `<div><dt class="muted small" style="margin:0">${k}</dt><dd style="margin:0;font-weight:700">${meEsc(v || "—")}</dd></div>`)
       .join("")}</dl>` +
@@ -469,6 +475,11 @@ async function meStart() {
   if (!(await meAccess())) {
     ["meProfileCard"].forEach((id) => { meEl(id).hidden = true; });
     return;
+  }
+
+  if (meOn("payslips") && meActive()) {
+    const { data } = await supabaseClient.rpc("my_pay", { p_workspace: meWorkspace });
+    mePay = data && data[0] ? data[0] : null;
   }
 
   meRenderProfile();
