@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Kairox Pay | Payroll</title>
+
+  <link rel="stylesheet" href="css/ui.css">
+  <link rel="stylesheet" href="css/payroll.css">
+</head>
+
+<body>
+  <div class="payroll-layout">
+
+    <aside class="payroll-sidebar">
+      <a href="dashboard-v2.html" class="payroll-brand">
+        <img
+          src="assets/images/kairox-pay-logo.png"
+          alt="Kairox Pay"
+        >
+      </a>
+
+      <nav class="payroll-navigation">
+        <a href="dashboard-v2.html">Dashboard</a>
+        <a href="employees-v2.html">Employees</a>
+        <a href="payroll.html" class="active">Payroll</a>
+        <a href="payslips.html">Payslips</a>
+        <a href="reports.html">Reports</a>
+        <a href="#">Taxes</a>
+        <a href="#">Settings</a>
+      </nav>
+    </aside>
+
+    <main class="payroll-main">
+
+      <header class="payroll-page-header">
+        <div>
+          <p class="payroll-eyebrow">KAIROX PAY</p>
+          <h1>Payroll Dashboard</h1>
+          <p>Run, review and manage payroll for your organization.</p>
+        </div>
+      </header>
+
+      <section class="payroll-period-card">
+        <div>
+          <span>Pay Period</span>
+          <h2 id="payrollPeriodDisplay">
+  August 1 – August 15, 2026
+</h2>
+          <p>Fortnightly payroll</p>
+        </div>
+
+        <div>
+          <span>Status</span>
+          <strong
+  id="payrollStatus"
+  class="payroll-status payroll-status-draft"
+>
+  Draft
+</strong>
+        </div>
+
+        <button
+  type="button"
+  id="changePayrollPeriodBtn"
+>
+  Change Period
+</button>
+
+      </section>
+
+      <section class="payroll-summary-grid">
+
+        <article class="payroll-summary-card">
+          <span>Employees</span>
+          <strong id="payrollEmployeeCount">0</strong>
+          <p>Included in this run</p>
+        </article>
+
+        <article class="payroll-summary-card">
+          <span>Gross Payroll</span>
+          <strong id="payrollGrossTotal">JMD 0.00</strong>
+          <p>Total earnings</p>
+        </article>
+
+        <article class="payroll-summary-card">
+          <span>Total Deductions</span>
+          <strong id="payrollDeductionTotal">JMD 0.00</strong>
+          <p>PAYE, NIS, NHT and Education Tax</p>
+        </article>
+
+        <article class="payroll-summary-card">
+          <span>Net Payroll</span>
+          <strong id="payrollNetTotal">JMD 0.00</strong>
+          <p>After all deductions</p>
+        </article>
+
+      </section>
+
+      <section class="payroll-actions">
+        <button
+  type="button"
+  id="runPayrollBtn"
+  class="primary"
+  onclick="runPayroll()"
+>
+  Run Payroll
+</button>
+
+        <button type="button">
+          Preview Payslips
+        </button>
+
+        <button
+  type="button"
+  id="exportPayrollPdfBtn"
+>
+  Export PDF
+</button>
+
+        <button
+  type="button"
+  id="exportPayrollExcelBtn"
+>
+  Export Excel
+</button>
+
+      </section>
+
+      <section class="payroll-table-card">
+        <div class="payroll-table-heading">
+          <div>
+            <h2>Employee Payroll Summary</h2>
+            <p>Employees included in this payroll run.</p>
+          </div>
+
+          <input
+            id="payrollEmployeeSearch"
+            type="search"
+            placeholder="Search employees..."
+          >
+        </div>
+
+        <div class="payroll-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Department</th>
+                <th>Gross Pay</th>
+                <th>PAYE</th>
+<th>NIS</th>
+<th>NHT</th>
+<th>Education Tax</th>
+<th>Net Pay</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody id="payrollEmployeeTableBody">
+              <tr>
+                <td colspan="10">
+                  Loading payroll employees...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+<section class="payroll-history-section">
+  <div class="payroll-history-header">
+    <div>
+      <span class="payroll-history-eyebrow">PAYROLL RECORDS</span>
+      <h2>Payroll History</h2>
+      <p>
+        View previously processed payroll periods and their saved totals.
+      </p>
+    </div>
+  </div>
+
+  <div class="payroll-history-table-wrapper">
+    <table class="payroll-history-table">
+      <thead>
+        <tr>
+          <th>Pay Period</th>
+          <th>Pay Date</th>
+          <th>Employees</th>
+          <th>Gross Payroll</th>
+          <th>Deductions</th>
+          <th>Net Payroll</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody id="payrollHistoryBody">
+        <tr>
+          <td colspan="8">
+            Loading payroll history...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section
+  class="payroll-history-detail-section"
+  id="payrollHistoryDetailSection"
+  hidden
+>
+  <div class="payroll-history-detail-header">
+    <div>
+      <span class="payroll-history-eyebrow">
+        SAVED PAYROLL RUN
+      </span>
+
+      <h2 id="payrollHistoryDetailPeriod">
+        Payroll Run Details
+      </h2>
+
+      <p id="payrollHistoryDetailMeta">
+        Historical payroll information.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      id="closePayrollHistoryDetailBtn"
+    >
+      Close
+    </button>
+  </div>
+
+  <div class="payroll-history-detail-summary">
+    <article>
+      <span>Employees</span>
+      <strong id="historyEmployeeCount">0</strong>
+    </article>
+
+    <article>
+      <span>Gross Payroll</span>
+      <strong id="historyGrossPayroll">JMD 0.00</strong>
+    </article>
+
+    <article>
+      <span>Total Deductions</span>
+      <strong id="historyTotalDeductions">JMD 0.00</strong>
+    </article>
+
+    <article>
+      <span>Net Payroll</span>
+      <strong id="historyNetPayroll">JMD 0.00</strong>
+    </article>
+  </div>
+
+  <div class="payroll-history-table-wrapper">
+    <table class="payroll-history-table">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Department</th>
+          <th>Gross Pay</th>
+          <th>PAYE</th>
+          <th>NIS</th>
+          <th>NHT</th>
+          <th>Education Tax</th>
+          <th>Deductions</th>
+          <th>Net Pay</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody id="payrollHistoryDetailBody">
+        <tr>
+          <td colspan="10">
+            Select a payroll run to view details.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="js/payroll.js"></script>
+<div
+  class="pay-period-modal"
+  id="payPeriodModal"
+  aria-hidden="true"
+>
+  <div class="pay-period-modal-backdrop"></div>
+
+  <div
+    class="pay-period-modal-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="payPeriodModalTitle"
+  >
+    <div class="pay-period-modal-header">
+      <div>
+        <p class="payroll-eyebrow">PAYROLL SETTINGS</p>
+        <h2 id="payPeriodModalTitle">Change Pay Period</h2>
+        <p>
+          Set the active payroll period and pay date.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        id="closePayPeriodModalBtn"
+        class="pay-period-modal-close"
+        aria-label="Close"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="pay-period-modal-body">
+
+      <div class="pay-period-field">
+        <label for="payFrequency">
+          Pay Frequency
+        </label>
+
+        <select id="payFrequency">
+          <option value="Fortnightly" selected>
+            Fortnightly
+          </option>
+          <option value="Monthly">
+            Monthly
+          </option>
+          <option value="Weekly">
+            Weekly
+          </option>
+        </select>
+      </div>
+
+      <div class="pay-period-date-grid">
+
+        <div class="pay-period-field">
+          <label for="payPeriodStart">
+            Period Start
+          </label>
+
+          <input
+            type="date"
+            id="payPeriodStart"
+          >
+        </div>
+
+        <div class="pay-period-field">
+          <label for="payPeriodEnd">
+            Period End
+          </label>
+
+          <input
+            type="date"
+            id="payPeriodEnd"
+          >
+        </div>
+
+      </div>
+
+      <div class="pay-period-field">
+        <label for="payDate">
+          Pay Date
+        </label>
+
+        <input
+          type="date"
+          id="payDate"
+        >
+      </div>
+
+    </div>
+
+    <div class="pay-period-modal-actions">
+      <button
+        type="button"
+        id="cancelPayPeriodBtn"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        id="savePayPeriodBtn"
+        class="primary"
+      >
+        Set Pay Period
+      </button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

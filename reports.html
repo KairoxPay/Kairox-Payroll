@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | Reports</title>
+  <link rel="stylesheet" href="css/dashboard-v2.css">
+  <link rel="stylesheet" href="css/app-pages.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">K</div>
+        <div><h1>KAIROX</h1><p>Payroll</p></div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="dashboard-v2.html">
+          <i class="nav-icon" data-lucide="house"></i>
+          <span>Home</span>
+        </a>
+        <a class="nav-item" href="employees-v2.html">
+          <i class="nav-icon" data-lucide="users"></i>
+          <span>Employees</span>
+        </a>
+        <a class="nav-item" href="payroll.html">
+          <i class="nav-icon" data-lucide="circle-dollar-sign"></i>
+          <span>Payroll</span>
+        </a>
+        <a class="nav-item" href="payslips.html">
+          <i class="nav-icon" data-lucide="receipt-text"></i>
+          <span>Payslips</span>
+        </a>
+        <a class="nav-item" href="compliance.html">
+          <i class="nav-icon" data-lucide="shield-check"></i>
+          <span>Compliance</span>
+        </a>
+        <a class="nav-item active" href="reports.html" aria-current="page">
+          <i class="nav-icon" data-lucide="chart-no-axes-column"></i>
+          <span>Reports</span>
+        </a>
+        <a class="nav-item" href="documents.html">
+          <i class="nav-icon" data-lucide="folder"></i>
+          <span>Documents</span>
+        </a>
+        <a class="nav-item" href="settings.html">
+          <i class="nav-icon" data-lucide="settings"></i>
+          <span>Settings</span>
+        </a>
+        <a class="nav-item" href="support.html">
+          <i class="nav-icon" data-lucide="circle-help"></i>
+          <span>Support</span>
+        </a>
+      </nav>
+
+      <a href="dashboard-v2.html" class="sidebar-brand">
+        <img src="assets/images/kairox-pay-logo.png" alt="Kairox Pay" class="sidebar-brand-logo">
+      </a>
+
+      <div class="user-card" data-logout title="Click to sign out" style="cursor:pointer">
+        <div class="user-avatar">?</div>
+        <div class="user-details"><strong>Not signed in</strong><span id="userRoleLabel">&nbsp;</span></div>
+        <span>⌄</span>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <div id="pageBanner" class="page-banner" hidden></div>
+
+      <header class="topbar">
+        <div>
+          <h2>Reports</h2>
+          <p>Payroll performance, statutory deductions and employee costs from your processed payrolls.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="notification-button" aria-label="Notifications">♢<span class="notification-count">0</span></button>
+          <div class="topbar-avatar">?</div>
+        </div>
+      </header>
+
+      <img id="reportsLogo" alt="" hidden style="display:block;max-width:200px;max-height:60px;margin:-4px 0 12px">
+      <p class="muted" style="margin:-8px 0 18px"><strong id="reportsCompanyName"></strong> <span class="muted">·</span> Pay period: <strong id="reportsPayPeriod">…</strong></p>
+
+      <section class="reports-summary-grid" aria-label="Payroll totals">
+        <article class="reports-summary-card"><span>Total Gross Payroll</span><strong id="reportsGrossPayroll">JMD 0.00</strong><p>Selected payroll</p></article>
+        <article class="reports-summary-card"><span>Total Deductions</span><strong id="reportsTotalDeductions">JMD 0.00</strong><p>Statutory deductions, pension, loans and other</p></article>
+        <article class="reports-summary-card"><span>Total Net Payroll</span><strong id="reportsNetPayroll">JMD 0.00</strong><p>Amount payable to employees</p></article>
+        <article class="reports-summary-card"><span>Employees</span><strong id="reportsEmployeeCount">0</strong><p>Included in the payroll</p></article>
+      </section>
+
+      <section class="reports-grid" aria-label="Reports">
+        <article class="report-card"><div><h3>Payroll Register</h3><p>Full employee breakdown for the selected period.</p></div><button class="btn" type="button" data-show="register">View Report</button></article>
+        <article class="report-card"><div><h3>PAYE Summary</h3><p>Employee PAYE and the total tax liability.</p></div><button class="btn" type="button" data-show="paye">View Report</button></article>
+        <article class="report-card"><div><h3>NIS Summary</h3><p>Employee NIS deductions and totals.</p></div><button class="btn" type="button" data-show="nis">View Report</button></article>
+        <article class="report-card"><div><h3>NHT Summary</h3><p>Employee NHT deductions for the period.</p></div><button class="btn" type="button" data-show="nht">View Report</button></article>
+        <article class="report-card"><div><h3>Education Tax Summary</h3><p>Education Tax across all employees.</p></div><button class="btn" type="button" data-show="education">View Report</button></article>
+        <article class="report-card"><div><h3>Employee Cost Report</h3><p>Gross pay, deductions and net cost per employee.</p></div><button class="btn" type="button" data-show="cost">View Report</button></article>
+      </section>
+
+      <section class="report-detail-card" id="payrollRegisterSection">
+        <div class="report-detail-header">
+          <div><span class="reports-eyebrow">SELECTED PAY PERIOD</span><h2>Payroll Register</h2><p>Complete payroll breakdown for the employees in this payroll.</p></div>
+          <div class="report-detail-actions"><button type="button" data-print>Print</button><button type="button" id="exportRegister">Export CSV</button></div>
+        </div>
+        <div class="report-table-wrap">
+          <table class="report-table">
+            <thead><tr><th>Employee</th><th>Department</th><th>Gross Pay</th><th>PAYE</th><th>NIS</th><th>NHT</th><th>Education Tax</th><th>Net Pay</th></tr></thead>
+            <tbody id="payrollRegisterBody"></tbody>
+            
+          </table>
+        </div>
+      </section>
+      <section class="report-detail-card" id="payeReportSection" style="display:none">
+        <div class="report-detail-header">
+          <div><span class="reports-eyebrow">STATUTORY</span><h2>PAYE Summary</h2><p>Employee PAYE and total tax liability.</p></div>
+          <div class="report-detail-actions"><button type="button" data-print>Print</button><button type="button" data-export="payeReportSection" data-file="Kairox_Pay_PAYE_Summary.csv">Export CSV</button></div>
+        </div>
+        <div class="report-table-wrap">
+          <table class="report-table">
+            <thead><tr><th>Employee</th><th>Gross Pay</th><th>PAYE</th></tr></thead>
+            <tbody id="payeReportBody"></tbody>
+            <tfoot><tr><th>Total</th><th></th><th id="payeReportTotal">JMD 0.00</th></tr></tfoot>
+          </table>
+        </div>
+      </section>
+      <section class="report-detail-card" id="nisReportSection" style="display:none">
+        <div class="report-detail-header">
+          <div><span class="reports-eyebrow">STATUTORY</span><h2>NIS Summary</h2><p>Employee NIS deductions.</p></div>
+          <div class="report-detail-actions"><button type="button" data-print>Print</button><button type="button" data-export="nisReportSection" data-file="Kairox_Pay_NIS_Summary.csv">Export CSV</button></div>
+        </div>
+        <div class="report-table-wrap">
+          <table class="report-table">
+            <thead><tr><th>Employee</th><th>Gross Pay</th><th>NIS</th></tr></thead>
+            <tbody id="nisReportBody"></tbody>
+            <tfoot><tr><th>Total</th><th></th><th id="nisReportTotal">JMD 0.00</th></tr></tfoot>
+          </table>
+        </div>
+      </section>
+      <section class="report-detail-card" id="nhtReportSection" style="display:none">
+        <div class="report-detail-header">
+          <div><span class="reports-eyebrow">STATUTORY</span><h2>NHT Summary</h2><p>Employee NHT deductions.</p></div>
+          <div class="report-detail-actions"><button type="button" data-print>Print</button><button type="button" data-export="nhtReportSection" data-file="Kairox_Pay_NHT_Summary.csv">Export CSV</button></div>
+        </div>
+        <div class="report-table-wrap">
+          <table class="report-table">
+            <thead><tr><th>Employee</th><th>Gross Pay</th><th>NHT</th></tr></thead>
+            <tbody id="nhtReportBody"></tbody>
+            <tfoot><tr><th>Total</th><th></th><th id="nhtReportTotal">JMD 0.00</th></tr></tfoot>
+          </table>
+        </div>
+      </section>
+      <section class="report-detail-card" id="educationTaxReportSection" style="display:none">
+        <div class="report-detail-header">
+          <div><span class="reports-eyebrow">STATUTORY</span><h2>Education Tax Summary</h2><p>Employee Education Tax deductions.</p></div>
+          <div class="report-detail-actions"><button type="button" data-print>Print</button><button type="button" data-export="educationTaxReportSection" data-file="Kairox_Pay_Education_Tax_Summary.csv">Export CSV</button></div>
+        </div>
+        <div class="report-table-wrap">
+          <table class="report-table">
+            <thead><tr><th>Employee</th><th>Gross Pay</th><th>Education Tax</th></tr></thead>
+            <tbody id="educationTaxReportBody"></tbody>
+            <tfoot><tr><th>Total</th><th></th><th id="educationTaxReportTotal">JMD 0.00</th></tr></tfoot>
+          </table>
+        </div>
+      </section>
+      <section class="report-detail-card" id="employeeCostReportSection" style="display:none">
+        <div class="report-detail-header">
+          <div><span class="reports-eyebrow">MANAGEMENT</span><h2>Employee Cost Report</h2><p>Gross pay, total deductions and net pay for each employee.</p></div>
+          <div class="report-detail-actions"><button type="button" data-print>Print</button><button type="button" data-export="employeeCostReportSection" data-file="Kairox_Pay_Employee_Cost.csv">Export CSV</button></div>
+        </div>
+        <div class="report-table-wrap">
+          <table class="report-table">
+            <thead><tr><th>Employee</th><th>Gross Pay</th><th>Total Deductions</th><th>Net Pay</th></tr></thead>
+            <tbody id="employeeCostReportBody"></tbody>
+            <tfoot><tr><th>Total</th><th id="employeeCostGrossTotal">JMD 0.00</th><th id="employeeCostDeductionTotal">JMD 0.00</th><th id="employeeCostNetTotal">JMD 0.00</th></tr></tfoot>
+          </table>
+        </div>
+      </section>
+
+      <footer class="dashboard-footer">
+        <span>© 2026 Kairox Technologies</span>
+        <span>Version 1.0.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="js/supabase.js"></script>
+  <script src="https://unpkg.com/lucide@1.66.0/dist/umd/lucide.min.js"></script>
+  <script src="js/payroll.js"></script>
+  <script src="js/reports.js"></script>
+  <script>
+    // Buttons on this page (no inline handlers, so the page works under a strict content policy too).
+    const SHOW = { paye: "showPayeReport", nis: "showNisReport", nht: "showNhtReport", education: "showEducationTaxReport", cost: "showEmployeeCostReport" };
+    document.addEventListener("click", (event) => {
+      const show = event.target.closest("[data-show]");
+      if (show) {
+        const key = show.getAttribute("data-show");
+        if (key === "register") {
+          document.getElementById("payrollRegisterSection").scrollIntoView({ behavior: "smooth", block: "start" });
+        } else if (typeof window[SHOW[key]] === "function") {
+          window[SHOW[key]]();
+        }
+        return;
+      }
+      if (event.target.closest("[data-print]")) { window.print(); return; }
+      const exp = event.target.closest("[data-export]");
+      if (exp) { exportReportTable(exp.getAttribute("data-export"), exp.getAttribute("data-file")); return; }
+      if (event.target.closest("#exportRegister")) { exportPayrollReport(); }
+    });
+  </script>
+  <script src="js/topbar.js"></script>
+  <script>
+    lucide.createIcons();
+    // The sidebar name card signs you out (js/topbar.js handles the profile menu and notifications).
+    document.addEventListener("click", async (event) => {
+      const card = event.target.closest && event.target.closest("[data-logout]");
+      if (card && window.confirm("Sign out of Kairox Pay?")) {
+        await supabaseClient.auth.signOut();
+        window.location.href = "login.html";
+      }
+    });
+  </script>
+</body>
+</html>

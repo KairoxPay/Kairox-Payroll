@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Kairox Pay | Payslip</title>
+
+  <link rel="stylesheet" href="css/payslip.css">
+</head>
+
+<body>
+ <body>
+
+  <main class="payslip-page">
+
+    <section class="payslip-document" id="payslipDocument">
+
+      <!-- HEADER -->
+      <header class="payslip-header">
+
+        <div class="payslip-brand">
+          <img
+            src="assets/images/kairox-pay-logo.png"
+            alt="Kairox Pay"
+          >
+
+          <div class="payslip-brand-text">
+            <h1>Kairox Pay</h1>
+            <p>Payroll • HR • Compliance</p>
+          </div>
+        </div>
+
+        <div class="payslip-meta">
+          <h2>Payslip</h2>
+
+          <p>
+            Pay period:
+            <strong id="payslipPeriod">
+              August 1 – August 15, 2026
+            </strong>
+          </p>
+          <p>
+  Pay date:
+  <strong id="payslipPayDate">
+    —
+  </strong>
+</p>
+        </div>
+
+      </header>
+
+
+      <!-- COMPANY -->
+      <section class="payslip-company">
+
+        <h3 id="payslipCompanyName">
+          Kairox Exchange
+        </h3>
+
+        <p id="payslipCompanyAddress">
+          Jamaica
+        </p>
+
+      </section>
+
+
+      <!-- EMPLOYEE INFORMATION -->
+      <section class="payslip-employee-info">
+
+        <div>
+          <span>Employee</span>
+
+          <strong id="payslipEmployeeName">
+            Loading employee...
+          </strong>
+        </div>
+
+        <div>
+          <span>Title</span>
+
+          <strong id="payslipEmployeeTitle">
+            —
+          </strong>
+        </div>
+
+        <div>
+          <span>Department</span>
+
+          <strong id="payslipEmployeeDepartment">
+            —
+          </strong>
+        </div>
+
+      </section>
+
+
+      <!-- EARNINGS -->
+      <section class="payslip-section">
+
+        <h4>Earnings</h4>
+
+        <div class="payslip-row">
+          <span>Gross Pay</span>
+
+          <strong id="payslipGrossPay">
+            JMD 0.00
+          </strong>
+        </div>
+
+        <div class="payslip-row">
+          <span>Basic Salary</span>
+
+          <strong id="payslipBasicSalary">
+            JMD 0.00
+          </strong>
+        </div>
+
+        <div class="payslip-row total-row">
+          <span>Total Earnings</span>
+
+          <strong id="payslipTotalEarnings">
+            JMD 0.00
+          </strong>
+        </div>
+
+      </section>
+
+
+      <!-- STATUTORY DEDUCTIONS -->
+      <section class="payslip-section">
+
+        <h4>Statutory Deductions</h4>
+
+        <div class="payslip-row">
+          <span>PAYE</span>
+
+          <strong id="payslipPaye">
+            JMD 0.00
+          </strong>
+        </div>
+
+        <div class="payslip-row">
+          <span>NIS</span>
+
+          <strong id="payslipNis">
+            JMD 0.00
+          </strong>
+        </div>
+
+        <div class="payslip-row">
+          <span>NHT</span>
+
+          <strong id="payslipNht">
+            JMD 0.00
+          </strong>
+        </div>
+
+        <div class="payslip-row">
+          <span>Education Tax</span>
+
+          <strong id="payslipEducationTax">
+            JMD 0.00
+          </strong>
+        </div>
+
+        <div class="payslip-row total-row">
+          <span>Total Deductions</span>
+
+          <strong id="payslipDeductionTotal">
+            JMD 0.00
+          </strong>
+        </div>
+
+      </section>
+
+
+      <!-- NET PAY -->
+      <section class="payslip-net-pay">
+
+        <span>Net Pay</span>
+
+        <strong id="payslipNetPay">
+          JMD 0.00
+        </strong>
+
+      </section>
+
+
+      <!-- ACTIONS -->
+      <section class="payslip-actions">
+
+        <a
+          href="payroll.html"
+          class="payslip-back-link"
+        >
+          ← Back to Payroll
+        </a>
+
+        <div>
+          <button
+            type="button"
+            id="downloadPayslipBtn"
+            class="primary"
+          >
+            Download as PDF
+          </button>
+
+          <button
+            type="button"
+            id="printPayslipBtn"
+          >
+            Print
+          </button>
+        </div>
+
+      </section>
+
+
+      <!-- FOOTER -->
+      <footer class="payslip-footer">
+
+        <p>
+          This payslip was generated electronically by Kairox Pay.
+        </p>
+
+        <strong>
+          Simple. Accurate. Compliant.
+        </strong>
+
+      </footer>
+
+    </section>
+
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/payroll.js"></script>
+  <script src="js/payslip.js"></script>
+</body>
+</html>

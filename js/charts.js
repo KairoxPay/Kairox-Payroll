@@ -1,58 +1,76 @@
-  const payrollChartElement = document.getElementById("payrollChart");
+let payrollChartInstance = null;
 
-  if (payrollChartElement) {
-    new Chart(payrollChartElement, {
-      type: "line",
+function clearPayrollChart() {
+  if (payrollChartInstance) {
+    payrollChartInstance.destroy();
+    payrollChartInstance = null;
+  }
+}
 
-      data: {
-        labels: [
-          "Feb",
-          "Mar",
-          "Apr",
-          "May",
-          "Jun",
-          "Jul"
-        ],
+// Draws gross and net payroll for the labelled pay periods.
+function renderPayrollChart(labels, grossValues, netValues) {
+  const canvas = document.getElementById("payrollChart");
 
-        datasets: [
-          {
-            label: "Payroll",
+  if (!canvas || typeof Chart === "undefined") {
+    return;
+  }
 
-            data: [
-              845000,
-              910000,
-              975000,
-              1060000,
-              1180000,
-              1245750
-            ],
+  clearPayrollChart();
 
-            borderColor: "#5B2C83",
-            backgroundColor: "rgba(91, 44, 131, 0.12)",
-            borderWidth: 4,
-            fill: true,
-            tension: 0.35,
-            pointRadius: 5,
-            pointHoverRadius: 8
-          }
-        ]
-      },
+  const formatMoney = (value) =>
+    Number(value || 0).toLocaleString("en-JM", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
 
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-
-        plugins: {
-          legend: {
-            display: false
-          }
+  payrollChartInstance = new Chart(canvas, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Gross payroll",
+          data: grossValues,
+          borderColor: "#5B2C83",
+          backgroundColor: "rgba(91, 44, 131, 0.12)",
+          borderWidth: 3,
+          fill: true,
+          tension: 0.35,
+          pointRadius: 4,
+          pointHoverRadius: 7
         },
-
-        scales: {
-          y: {
-            beginAtZero: false
+        {
+          label: "Net pay",
+          data: netValues,
+          borderColor: "#2CB8B3",
+          borderWidth: 3,
+          fill: false,
+          tension: 0.35,
+          pointRadius: 4,
+          pointHoverRadius: 7
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, position: "bottom" },
+        tooltip: {
+          callbacks: {
+            label: (context) =>
+              `${context.dataset.label}: JMD ${formatMoney(context.parsed.y)}`
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: (value) => Number(value).toLocaleString("en-JM")
           }
         }
       }
-    });
-  }
+    }
+  });
+}

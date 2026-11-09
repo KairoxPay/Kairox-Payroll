@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Kairox Pay | Payslips</title>
+
+  <link
+    rel="stylesheet"
+    href="css/dashboard-v2.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="css/reports.css"
+  >
+
+  <link
+  rel="stylesheet"
+  href="css/payroll.css"
+>
+
+  <link
+  rel="stylesheet"
+  href="css/payslips.css"
+>
+
+</head>
+
+<body>
+
+  <div class="dashboard-layout">
+
+    <aside class="payroll-sidebar">
+  <a
+    href="dashboard-v2.html"
+    class="payroll-brand"
+  >
+    <img
+      src="assets/images/kairox-pay-logo.png"
+      alt="Kairox Pay"
+    >
+  </a>
+
+  <nav class="payroll-navigation">
+    <a href="dashboard-v2.html">
+      Dashboard
+    </a>
+
+    <a href="employees-v2.html">
+      Employees
+    </a>
+
+    <a href="payroll.html">
+      Payroll
+    </a>
+
+    <a
+      href="payslips.html"
+      class="active"
+    >
+      Payslips
+    </a>
+
+    <a href="reports.html">
+      Reports
+    </a>
+
+    <a href="#">
+      Taxes
+    </a>
+
+    <a href="#">
+      Settings
+    </a>
+  </nav>
+</aside>
+
+    <main class="dashboard-main reports-main">
+
+      <header class="reports-header">
+
+        <div>
+
+          <p class="reports-eyebrow">
+            KAIROX PAY
+          </p>
+
+          <h1>
+            Payslips
+          </h1>
+
+          <p>
+            View and manage employee payslips for the current payroll period.
+          </p>
+
+        </div>
+
+      </header>
+
+      <div class="payslips-period-selector">
+    <label for="payslipsPeriodSelect">
+        View Pay Period
+    </label>
+
+    <select id="payslipsPeriodSelect">
+        <option value="">
+            Current Pay Period
+        </option>
+    </select>
+</div>
+
+      <section class="reports-summary-grid">
+
+        <article class="reports-summary-card">
+
+          <span>
+            Pay Period
+          </span>
+
+          <strong id="payslipsPayPeriod">
+            August 1 – August 15, 2026
+          </strong>
+
+          <p>
+            Current payroll period
+          </p>
+
+        </article>
+
+
+        <article class="reports-summary-card">
+
+          <span>
+            Employees
+          </span>
+
+          <strong id="payslipsEmployeeCount">
+            0
+          </strong>
+
+          <p>
+            Payslips available
+          </p>
+
+        </article>
+
+
+        <article class="reports-summary-card">
+
+          <span>
+            Gross Payroll
+          </span>
+
+          <strong id="payslipsGrossTotal">
+            JMD 0.00
+          </strong>
+
+          <p>
+            Total earnings
+          </p>
+
+        </article>
+
+
+        <article class="reports-summary-card">
+
+          <span>
+            Net Payroll
+          </span>
+
+          <strong id="payslipsNetTotal">
+            JMD 0.00
+          </strong>
+
+          <p>
+            Amount payable
+          </p>
+
+        </article>
+
+      </section>
+
+
+      <section class="report-detail-card">
+
+        <div class="report-detail-header">
+
+          <div>
+
+            <p class="reports-eyebrow">
+              CURRENT PAY PERIOD
+            </p>
+
+            <h2>
+              Employee Payslips
+            </h2>
+
+            <p>
+              Open an employee payslip to view, print or download it.
+            </p>
+
+          </div>
+
+
+          <div class="report-detail-actions">
+
+            <input
+              type="search"
+              id="payslipSearch"
+              placeholder="Search employees..."
+              aria-label="Search employee payslips"
+            >
+
+          </div>
+
+        </div>
+
+
+        <div class="report-table-wrap">
+
+          <table class="report-table">
+
+            <thead>
+
+              <tr>
+                <th>Employee</th>
+                <th>Department</th>
+                <th>Gross Pay</th>
+                <th>Deductions</th>
+                <th>Net Pay</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+
+            </thead>
+
+
+            <tbody id="payslipsTableBody">
+
+              <tr>
+                <td colspan="7">
+                  Loading payslips...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/payroll.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="js/payslips.js"></script>
+
+</body>
+</html>

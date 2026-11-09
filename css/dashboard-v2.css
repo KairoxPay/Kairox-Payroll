@@ -870,3 +870,17 @@ button {
     width:100%;
 
 }
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px 28px;
+  text-decoration: none;
+}
+
+.sidebar-brand-logo {
+  display: block;
+  width: 165px;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | People</title>
+  <link rel="stylesheet" href="css/dashboard-v2.css">
+  <link rel="stylesheet" href="css/app-pages.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">K</div>
+        <div><h1>KAIROX</h1><p>Payroll</p></div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="dashboard-v2.html">
+          <i class="nav-icon" data-lucide="house"></i>
+          <span>Home</span>
+        </a>
+        <a class="nav-item" href="employees-v2.html">
+          <i class="nav-icon" data-lucide="users"></i>
+          <span>Employees</span>
+        </a>
+        <a class="nav-item active" href="people.html" aria-current="page">
+          <i class="nav-icon" data-lucide="users-round"></i>
+          <span>People</span>
+        </a>
+        <a class="nav-item" href="leave.html">
+          <i class="nav-icon" data-lucide="calendar-days"></i>
+          <span>Leave</span>
+        </a>
+        <a class="nav-item" href="leavers.html">
+          <i class="nav-icon" data-lucide="user-minus"></i>
+          <span>Leavers</span>
+        </a>
+        <a class="nav-item" href="payroll.html">
+          <i class="nav-icon" data-lucide="circle-dollar-sign"></i>
+          <span>Payroll</span>
+        </a>
+        <a class="nav-item" href="payslips.html">
+          <i class="nav-icon" data-lucide="receipt-text"></i>
+          <span>Payslips</span>
+        </a>
+        <a class="nav-item" href="compliance.html">
+          <i class="nav-icon" data-lucide="shield-check"></i>
+          <span>Compliance</span>
+        </a>
+        <a class="nav-item" href="reports.html">
+          <i class="nav-icon" data-lucide="chart-no-axes-column"></i>
+          <span>Reports</span>
+        </a>
+        <a class="nav-item" href="documents.html">
+          <i class="nav-icon" data-lucide="folder"></i>
+          <span>Documents</span>
+        </a>
+        <a class="nav-item" href="settings.html">
+          <i class="nav-icon" data-lucide="settings"></i>
+          <span>Settings</span>
+        </a>
+        <a class="nav-item" href="support.html">
+          <i class="nav-icon" data-lucide="circle-help"></i>
+          <span>Support</span>
+        </a>
+      </nav>
+
+      <a href="dashboard-v2.html" class="sidebar-brand">
+        <img src="assets/images/kairox-pay-logo.png" alt="Kairox Pay" class="sidebar-brand-logo">
+      </a>
+
+      <div class="user-card" data-logout title="Click to sign out" style="cursor:pointer">
+        <div class="user-avatar">?</div>
+        <div class="user-details"><strong>Not signed in</strong><span id="userRoleLabel">&nbsp;</span></div>
+        <span>⌄</span>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <div id="pageBanner" class="page-banner" hidden></div>
+
+      <header class="topbar">
+        <div>
+          <h2>People</h2>
+          <p>People, their managers and who has a login.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="notification-button" aria-label="Notifications">♢<span class="notification-count">0</span></button>
+          <div class="topbar-avatar">?</div>
+        </div>
+      </header>
+
+      <div id="peopleMessage" class="form-message" role="status" style="margin:0 0 14px"></div>
+
+      <section class="stat-grid" aria-label="People summary">
+        <article class="stat-card"><span id="statPeopleLabel">People</span><strong id="statPeople">—</strong><p id="statPeopleDetail">Loading…</p></article>
+        <article class="stat-card"><span>With portal access</span><strong id="statAccess">—</strong><p id="statAccessDetail">Can see their own payslips and leave</p></article>
+        <article class="stat-card" id="statNoMgrCard"><span>No manager yet</span><strong id="statNoMgr">—</strong><p>Their leave needs an admin or HR officer</p></article>
+        <article class="stat-card"><span>Managers</span><strong id="statManagers">—</strong><p>People who have a team</p></article>
+      </section>
+
+      <section class="page-card" id="peopleCard">
+        <div class="page-card-head"><div><h3>People</h3><p></p></div></div>
+        <div class="filters">
+          <div class="field"><label for="pplSearch">Search</label><input id="pplSearch" type="search" placeholder="Name, department or job title"></div>
+          <div class="field"><label for="pplFilter">Show</label><select id="pplFilter"><option value="active">Current employees</option><option value="all">Everyone</option><option value="left">Left or inactive</option></select></div>
+        </div>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Name</th><th>Job</th><th>Manager</th><th>Status</th><th id="accessHead">Portal access</th><th></th></tr></thead>
+            <tbody id="peopleBody"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody>
+          </table>
+        </div>
+        <p class="note" id="peopleNote"></p>
+      </section>
+
+      <div class="dialog-backdrop" id="pdDialog" hidden>
+        <form class="dialog" id="pdDialogForm" role="dialog" aria-modal="true" aria-labelledby="pdDialogTitle" novalidate></form>
+      </div>
+
+      <footer class="dashboard-footer">
+        <span>© 2026 Kairox Technologies</span>
+        <span>Version 1.0.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="js/supabase.js"></script>
+  <script src="https://unpkg.com/lucide@1.66.0/dist/umd/lucide.min.js"></script>
+  <script src="js/people.js"></script>
+  <script src="js/topbar.js"></script>
+  <script>
+    lucide.createIcons();
+    // The sidebar name card signs you out (js/topbar.js handles the profile menu and notifications).
+    document.addEventListener("click", async (event) => {
+      const card = event.target.closest && event.target.closest("[data-logout]");
+      if (card && window.confirm("Sign out of Kairox Pay?")) {
+        await supabaseClient.auth.signOut();
+        window.location.href = "login.html";
+      }
+    });
+  </script>
+</body>
+</html>

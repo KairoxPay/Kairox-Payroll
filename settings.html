@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | Settings</title>
+  <link rel="stylesheet" href="css/payroll.css">
+  <style>
+    .settings-section { margin-bottom: 20px; }
+    .settings-body { padding: 22px; }
+    .settings-intro { margin: 0 0 18px; color: #6f7285; font-size: .92rem; line-height: 1.5; }
+    .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+    .settings-field label { display: block; margin-bottom: 6px; color: #303145; font-size: .82rem; font-weight: 800; }
+    .settings-field small { display: block; margin-top: 5px; color: #6f7285; font-size: .76rem; }
+    .settings-field input, .settings-table select {
+      width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid #dfe0e8; border-radius: 10px;
+      background: #fff; color: #1c1d2e; font: inherit; outline: none;
+    }
+    .settings-field input:focus, .settings-table select:focus { border-color: #7652b7; box-shadow: 0 0 0 3px rgba(81, 26, 136, 0.08); }
+    .settings-field input:disabled, .settings-table select:disabled { background: #f4f4f8; color: #6f7285; }
+    .settings-actions { display: flex; align-items: center; gap: 14px; margin-top: 18px; flex-wrap: wrap; }
+    .settings-button {
+      min-height: 44px; padding: 10px 18px; border: 0; border-radius: 10px; background: #35156f; color: #fff;
+      font: inherit; font-weight: 800; cursor: pointer;
+    }
+    .settings-button.small { min-height: 36px; padding: 6px 14px; font-size: .82rem; }
+    .settings-button:disabled { opacity: .55; cursor: not-allowed; }
+    .settings-meta { color: #6f7285; font-size: .82rem; }
+    #settingsMessage { min-height: 22px; margin: 0 0 16px; font-weight: 800; }
+    #settingsMessage.error { color: #b91c1c; }
+    #settingsMessage.ok { color: #087b4d; }
+    .settings-banner { margin: 0 0 18px; padding: 14px 18px; border-radius: 12px; background: #fff4e5; border: 1px solid #f6d9a6; color: #8a4b00; font-weight: 700; }
+    .settings-banner a { color: #35156f; }
+    .settings-table { width: 100%; border-collapse: collapse; }
+    .settings-table th, .settings-table td { padding: 12px 18px; border-bottom: 1px solid #e5e7ef; text-align: left; font-size: .9rem; }
+    .settings-table th { color: #6f7285; background: #fafafe; font-size: .76rem; text-transform: uppercase; letter-spacing: .045em; }
+    .settings-table td select { min-width: 170px; }
+  </style>
+</head>
+<body>
+  <div class="payroll-layout">
+    <aside class="payroll-sidebar">
+      <a class="payroll-brand" href="dashboard-v2.html"><img src="assets/images/kairox-pay-logo.png" alt="Kairox Pay"></a>
+      <nav class="payroll-navigation">
+        <a href="dashboard-v2.html">Dashboard</a>
+        <a href="employees-v2.html">Employees</a>
+        <a href="payroll.html">Payroll</a>
+        <a href="payslips.html">Payslips</a>
+        <a href="reports.html">Reports</a>
+        <a class="active" href="settings.html">Settings</a>
+      </nav>
+    </aside>
+
+    <main class="payroll-main">
+      <div id="settingsBanner" class="settings-banner" hidden></div>
+
+      <header class="payroll-page-header">
+        <p class="payroll-eyebrow">KAIROX PAY</p>
+        <h1>Settings</h1>
+        <p>Settings for <strong id="settingsCompanyName">this company</strong>: company details, statutory rates, and who can use its payroll.</p>
+      </header>
+
+      <div id="settingsMessage" role="status"></div>
+
+      <section class="payroll-table-card settings-section" id="companyCard" hidden>
+        <div class="payroll-table-heading">
+          <div>
+            <h2>Company profile</h2>
+            <p>Printed on payslips, and shown at the top of exports and reports.</p>
+          </div>
+        </div>
+        <div class="settings-body">
+          <div class="settings-grid">
+            <div class="settings-field"><label for="companyName">Company name (legal)</label><input id="companyName" type="text" maxlength="150" autocomplete="organization"></div>
+            <div class="settings-field"><label for="companyTradingName">Trading name (if different)</label><input id="companyTradingName" type="text" maxlength="150"></div>
+            <div class="settings-field"><label for="companyTrn">Employer TRN</label><input id="companyTrn" type="text" inputmode="numeric" maxlength="13" placeholder="9 digits"><small>Your company's Tax Registration Number, as used on S01 and S02.</small></div>
+            <div class="settings-field"><label for="companyNis">Employer NIS number</label><input id="companyNis" type="text" maxlength="20"></div>
+            <div class="settings-field"><label for="companyAddress1">Address, line 1</label><input id="companyAddress1" type="text" maxlength="120" autocomplete="address-line1"></div>
+            <div class="settings-field"><label for="companyAddress2">Address, line 2</label><input id="companyAddress2" type="text" maxlength="120" autocomplete="address-line2"></div>
+            <div class="settings-field"><label for="companyParish">Parish</label><select id="companyParish"><option value="">Choose a parish</option><option>Kingston</option><option>St. Andrew</option><option>St. Thomas</option><option>Portland</option><option>St. Mary</option><option>St. Ann</option><option>Trelawny</option><option>St. James</option><option>Hanover</option><option>Westmoreland</option><option>St. Elizabeth</option><option>Manchester</option><option>Clarendon</option><option>St. Catherine</option></select></div>
+            <div class="settings-field"><label for="companyPhone">Phone</label><input id="companyPhone" type="tel" maxlength="30" autocomplete="tel"></div>
+            <div class="settings-field"><label for="companyEmail">Email</label><input id="companyEmail" type="email" maxlength="120" autocomplete="email"></div>
+          </div>
+          <div class="settings-field" style="margin-top:22px">
+            <label for="companyLogoFile">Company logo</label>
+            <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:8px">
+              <div id="companyLogoPreview" style="width:200px;height:80px;border:1px dashed #c9cad6;border-radius:12px;display:grid;place-items:center;color:#6f7285;font-size:.85rem;background:#fafafe;overflow:hidden">No logo yet</div>
+              <div id="companyLogoControls" style="display:grid;gap:8px;max-width:340px">
+                <input id="companyLogoFile" type="file" accept="image/png,image/jpeg,image/webp">
+                <div><button id="removeCompanyLogoButton" class="settings-button" type="button" hidden>Remove logo</button></div>
+                <small>PNG, JPG or WebP. It is shrunk to fit and printed on this company's payslips and reports.</small>
+              </div>
+            </div>
+          </div>
+          <div class="settings-actions">
+            <button id="saveCompanyButton" class="settings-button" type="button">Save company profile</button>
+            <span id="companyMeta" class="settings-meta"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="payroll-table-card settings-section" id="ratesCard" hidden>
+        <div class="payroll-table-heading">
+          <div>
+            <h2>Statutory rates</h2>
+            <p>Employee-side rates used to calculate every payroll and payslip.</p>
+          </div>
+        </div>
+        <div class="settings-body">
+          <p class="settings-intro">
+            Check these against taj.gov.jm, nis.gov.jm and nht.gov.jm each April. A change applies to new and unsaved
+            payrolls only. Payrolls already processed keep the rates they were run with, and every change is recorded in the audit trail.
+          </p>
+          <div class="settings-grid">
+            <div class="settings-field"><label for="rateThreshold">Tax-free threshold (J$ a year)</label><input id="rateThreshold" type="number" min="0" step="0.01"></div>
+            <div class="settings-field"><label for="ratePayeLower">PAYE lower rate (%)</label><input id="ratePayeLower" type="number" min="0" max="100" step="0.01"></div>
+            <div class="settings-field"><label for="ratePayeHigher">PAYE higher rate (%)</label><input id="ratePayeHigher" type="number" min="0" max="100" step="0.01"></div>
+            <div class="settings-field"><label for="ratePayeBand">Lower rate applies up to (J$ a year)</label><input id="ratePayeBand" type="number" min="0" step="0.01"><small>Taxable income above the threshold, up to this amount, is taxed at the lower rate.</small></div>
+            <div class="settings-field"><label for="rateNis">NIS, employee (%)</label><input id="rateNis" type="number" min="0" max="100" step="0.01"></div>
+            <div class="settings-field"><label for="rateNisCeiling">NIS earnings ceiling (J$ a year)</label><input id="rateNisCeiling" type="number" min="0" step="0.01"></div>
+            <div class="settings-field"><label for="rateNht">NHT, employee (%)</label><input id="rateNht" type="number" min="0" max="100" step="0.01"></div>
+            <div class="settings-field"><label for="rateEdTax">Education Tax, employee (%)</label><input id="rateEdTax" type="number" min="0" max="100" step="0.01"></div>
+          </div>
+          <div class="settings-actions">
+            <button id="saveRatesButton" class="settings-button" type="button">Save rates</button>
+            <span id="ratesMeta" class="settings-meta"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="payroll-table-card settings-section" id="usersCard" hidden>
+        <div class="payroll-table-heading">
+          <div>
+            <h2>Users and roles</h2>
+            <p>Admins approve and process payroll. Payroll clerks prepare it. HR officers look after people and leave without seeing pay. Managers approve their own team's leave. Viewers can only read.</p>
+          </div>
+        </div>
+        <div class="settings-body">
+          <p class="settings-intro">
+            To add someone, first create their login in Supabase (Authentication, then Users), then give them a role here.
+            Someone with no role sees nothing.
+          </p>
+          <div class="payroll-table-wrap">
+            <table class="settings-table">
+              <thead><tr><th>Email</th><th>Role</th><th>Last signed in</th><th></th></tr></thead>
+              <tbody id="usersTableBody"><tr><td colspan="4">Loading users...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="payroll-table-card settings-section" id="portalCard" hidden>
+        <div class="payroll-table-heading">
+          <div>
+            <h2>Employee portal</h2>
+            <p>What employees see when they sign in with a login linked to their record. Link logins on the People page.</p>
+          </div>
+        </div>
+        <div class="settings-body">
+          <p class="settings-intro">Employees only ever see their own information. Switch off anything you do not want to offer. Documents are only shown if you share them one by one on the Documents page.</p>
+          <label class="settings-check"><input type="checkbox" id="portalPayslips"> Payslips: view and print their own payslips</label><br>
+          <label class="settings-check"><input type="checkbox" id="portalLeave"> Leave: see their balance and request leave</label><br>
+          <label class="settings-check"><input type="checkbox" id="portalDetails"> Details: update their own contact details and emergency contact</label><br>
+          <label class="settings-check"><input type="checkbox" id="portalTax"> Tax totals: see what was paid and deducted each year</label><br>
+          <label class="settings-check"><input type="checkbox" id="portalDocuments"> Documents: download the company documents you have shared</label>
+          <div class="settings-actions" style="margin-top:16px">
+            <button id="savePortalButton" class="settings-button" type="button">Save</button>
+            <span id="portalMeta" class="settings-meta"></span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/app-settings.js"></script>
+</body>
+</html>

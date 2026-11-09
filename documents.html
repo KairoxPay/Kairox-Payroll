@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | Documents</title>
+  <link rel="stylesheet" href="css/dashboard-v2.css">
+  <link rel="stylesheet" href="css/app-pages.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">K</div>
+        <div><h1>KAIROX</h1><p>Payroll</p></div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="dashboard-v2.html">
+          <i class="nav-icon" data-lucide="house"></i>
+          <span>Home</span>
+        </a>
+        <a class="nav-item" href="employees-v2.html">
+          <i class="nav-icon" data-lucide="users"></i>
+          <span>Employees</span>
+        </a>
+        <a class="nav-item" href="payroll.html">
+          <i class="nav-icon" data-lucide="circle-dollar-sign"></i>
+          <span>Payroll</span>
+        </a>
+        <a class="nav-item" href="payslips.html">
+          <i class="nav-icon" data-lucide="receipt-text"></i>
+          <span>Payslips</span>
+        </a>
+        <a class="nav-item" href="compliance.html">
+          <i class="nav-icon" data-lucide="shield-check"></i>
+          <span>Compliance</span>
+        </a>
+        <a class="nav-item" href="reports.html">
+          <i class="nav-icon" data-lucide="chart-no-axes-column"></i>
+          <span>Reports</span>
+        </a>
+        <a class="nav-item active" href="documents.html" aria-current="page">
+          <i class="nav-icon" data-lucide="folder"></i>
+          <span>Documents</span>
+        </a>
+        <a class="nav-item" href="settings.html">
+          <i class="nav-icon" data-lucide="settings"></i>
+          <span>Settings</span>
+        </a>
+        <a class="nav-item" href="support.html">
+          <i class="nav-icon" data-lucide="circle-help"></i>
+          <span>Support</span>
+        </a>
+      </nav>
+
+      <a href="dashboard-v2.html" class="sidebar-brand">
+        <img src="assets/images/kairox-pay-logo.png" alt="Kairox Pay" class="sidebar-brand-logo">
+      </a>
+
+      <div class="user-card" data-logout title="Click to sign out" style="cursor:pointer">
+        <div class="user-avatar">?</div>
+        <div class="user-details"><strong>Not signed in</strong><span id="userRoleLabel">&nbsp;</span></div>
+        <span>⌄</span>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <div id="pageBanner" class="page-banner" hidden></div>
+
+      <header class="topbar">
+        <div>
+          <h2>Documents</h2>
+          <p>Company policies, templates and filing receipts, kept in one private place.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="notification-button" aria-label="Notifications">♢<span class="notification-count">0</span></button>
+          <div class="topbar-avatar">?</div>
+        </div>
+      </header>
+
+      <section class="page-card" id="uploadCard" hidden>
+        <div class="page-card-head"><div><h3>Add a document</h3><p>Policies, templates, filing receipts, insurance papers. Files are private to your team. PDF, Word, Excel, CSV, text, PNG or JPG, up to 10 MB.</p></div></div>
+        <form id="uploadForm" novalidate>
+          <div class="form-grid">
+            <div class="field"><label for="docFile">File</label><input id="docFile" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg"></div>
+            <div class="field"><label for="docTitle">Title</label><input id="docTitle" type="text" maxlength="120" autocomplete="off"></div>
+            <div class="field"><label for="docCategory">Category</label><select id="docCategory">
+              <option>Policies</option><option>Contracts and templates</option><option>Filing receipts</option><option>Insurance</option><option>Other</option></select></div>
+            <div class="field wide"><label for="docDescription">Description (optional)</label><textarea id="docDescription" maxlength="500"></textarea></div>
+          </div>
+          <div class="form-message" id="uploadMessage" role="alert"></div>
+          <button class="btn primary" id="uploadButton" type="submit">Upload document</button>
+        </form>
+      </section>
+
+      <section class="page-card">
+        <div class="page-card-head"><div><h3>Company documents</h3><p>Everything your team has added. Employee files stay on each employee's own profile.</p></div></div>
+        <div class="filters">
+          <div class="field"><label for="docSearch">Search</label><input id="docSearch" type="search" placeholder="Title or file name"></div>
+          <div class="field"><label for="docFilter">Category</label><select id="docFilter"><option value="">All categories</option></select></div>
+        </div>
+        <p class="muted small" id="docCount"></p>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Document</th><th>Category</th><th>File</th><th>Added</th><th></th></tr></thead>
+            <tbody id="docBody"><tr class="empty-row"><td colspan="5">Loading…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="form-message" id="listMessage" role="alert"></div>
+      </section>
+
+      <footer class="dashboard-footer">
+        <span>© 2026 Kairox Technologies</span>
+        <span>Version 1.0.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="js/supabase.js"></script>
+  <script src="https://unpkg.com/lucide@1.66.0/dist/umd/lucide.min.js"></script>
+  <script src="js/documents.js"></script>
+  <script src="js/topbar.js"></script>
+  <script>
+    lucide.createIcons();
+    // The sidebar name card signs you out (js/topbar.js handles the profile menu and notifications).
+    document.addEventListener("click", async (event) => {
+      const card = event.target.closest && event.target.closest("[data-logout]");
+      if (card && window.confirm("Sign out of Kairox Pay?")) {
+        await supabaseClient.auth.signOut();
+        window.location.href = "login.html";
+      }
+    });
+  </script>
+</body>
+</html>

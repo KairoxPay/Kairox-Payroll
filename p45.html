@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | P45 figures</title>
+  <style>
+    body { margin: 0; padding: 28px 18px 60px; background: #f6f5fa; color: #17172f; font: 16px/1.5 Inter, -apple-system, "Segoe UI", sans-serif; }
+    .sheet { max-width: 820px; margin: 0 auto; padding: 36px 40px; background: #fff; border: 1px solid #e3e1ee; border-radius: 14px; }
+    .toolbar { max-width: 820px; margin: 0 auto 14px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .btn { display: inline-flex; align-items: center; min-height: 40px; padding: 8px 16px; border: 1px solid #d8cee8; border-radius: 10px; background: #fff; color: #35156f; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; }
+    .btn.primary { color: #fff; background: #5b2c83; border-color: #5b2c83; }
+    .head { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; border-bottom: 2px solid #5b2c83; padding-bottom: 16px; margin-bottom: 20px; }
+    .head img { max-width: 180px; max-height: 64px; display: block; margin-bottom: 8px; }
+    .head h2 { margin: 0 0 4px; font-size: 1.15rem; }
+    .head p { margin: 0; color: #5f6475; font-size: .9rem; }
+    h1 { margin: 0 0 6px; font-size: 1.35rem; line-height: 1.25; }
+    .copies { margin: 0 0 20px; color: #5f6475; font-size: .92rem; }
+    table { width: 100%; border-collapse: collapse; margin: 0 0 22px; }
+    th, td { padding: 10px 12px; border: 1px solid #e3e1ee; text-align: left; font-size: .95rem; vertical-align: top; }
+    th { width: 46%; background: #faf9fd; font-weight: 700; }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+    .warn { margin: 0 0 18px; padding: 12px 14px; border-radius: 10px; background: #fff4e5; border: 1px solid #f6d9a6; color: #8a4b00; font-weight: 700; }
+    .note { color: #5f6475; font-size: .88rem; }
+    .banner { max-width: 820px; margin: 0 auto 14px; padding: 14px 18px; border-radius: 12px; background: #fff4e5; border: 1px solid #f6d9a6; color: #8a4b00; font-weight: 700; }
+    [hidden] { display: none !important; }
+    @media print { body { padding: 0; background: #fff; } .toolbar, .banner { display: none !important; } .sheet { border: 0; padding: 0; max-width: none; } }
+  </style>
+</head>
+<body>
+  <div id="p45Banner" class="banner" hidden></div>
+  <div class="toolbar" id="p45Toolbar" hidden>
+    <button class="btn primary" id="p45Print" type="button">Print</button>
+    <button class="btn" id="p45Csv" type="button">Download CSV</button>
+    <a class="btn" href="leavers.html">Back to Leavers</a>
+  </div>
+
+  <main class="sheet" id="p45Sheet" hidden>
+    <div class="head">
+      <div>
+        <img id="p45Logo" alt="" hidden>
+        <h2 id="p45Company"></h2>
+        <p id="p45CompanyLines"></p>
+      </div>
+      <p id="p45Printed" style="text-align:right"></p>
+    </div>
+
+    <h1>Certificate of gross emoluments and tax deducted to date (P45 figures)</h1>
+    <p class="copies">When an employee leaves, Tax Administration Jamaica expects a P45 in triplicate: one copy for TAJ and two for the employee, who hands them to a new employer. Copy these figures onto TAJ's P45 form.</p>
+
+    <div id="p45Warning" class="warn" hidden></div>
+
+    <table id="p45Employee"><tbody></tbody></table>
+    <table id="p45Figures"><tbody></tbody></table>
+
+    <p class="note" id="p45Footnote"></p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/topbar.js"></script>
+  <script src="js/p45.js"></script>
+</body>
+</html>
