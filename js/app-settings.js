@@ -22,8 +22,8 @@ const RATE_FIELDS = [
 ];
 
 const ROLE_OPTIONS = [
-  ["none", "No access"],
-  ["viewer", "Viewer (read only)"],
+  ["none", "No staff access (employees use My portal)"],
+  ["viewer", "Viewer (read only: sees everyone's pay)"],
   ["payroll", "Payroll / accounts officer (prepares and processes payroll)"],
   ["director", "Managing director (everything except Settings)"],
   ["hr", "HR officer (people and leave, no pay)"],
@@ -411,10 +411,23 @@ async function saveSettingsRates() {
 }
 
 /* ================= USERS AND ROLES ================= */
+// Who is linked to an employee record (their email, in lower case, to the employee's name). Used to show who has portal access.
+let settingsPortalNames = {};
+
 async function loadSettingsUsers() {
   const body = document.getElementById("usersTableBody");
 
-  const { data, error } = await supabaseClient.rpc("list_user_roles", { p_workspace: SETTINGS_WORKSPACE });
+  const [{ data, error }, logins, people] = await Promise.all([
+    supabaseClient.rpc("list_user_roles", { p_workspace: SETTINGS_WORKSPACE }),
+    supabaseClient.rpc("employee_logins_list", { p_workspace: SETTINGS_WORKSPACE }),
+    supabaseClient.rpc("people_directory", { p_workspace: SETTINGS_WORKSPACE })
+  ]);
+
+  settingsPortalNames = {};
+  (logins.data || []).forEach((l) => {
+    const person = (people.data || []).find((p) => p.id === l.employee_id);
+    if (person) settingsPortalNames[String(l.email || "").toLowerCase()] = person.name;
+  });
 
   if (error) {
     console.error("Could not load users:", error);
@@ -436,7 +449,11 @@ async function loadSettingsUsers() {
 
       return `
         <tr data-email="${settingsEscape(user.email)}">
-          <td><strong>${settingsEscape(user.email)}</strong></td>
+          <td><strong>${settingsEscape(user.email)}</strong>${
+            settingsPortalNames[String(user.email || "").toLowerCase()]
+              ? `<small style="display:block;color:#0a8782;font-weight:700">Employee portal: ${settingsEscape(settingsPortalNames[String(user.email).toLowerCase()])}</small>`
+              : ""
+          }</td>
           <td>
             <select data-role-select>
               ${ROLE_OPTIONS.map(
@@ -455,6 +472,20 @@ async function loadSettingsUsers() {
 
 async function saveUserRole(email, role) {
   setSettingsMessage("", "");
+
+  // A Viewer can read everyone's salaries and payroll. Employees should not have it: they use My portal instead.
+  const employeeName = settingsPortalNames[String(email).toLowerCase()];
+
+  if (role === "viewer" && employeeName) {
+    const ok = typeof window.confirm === "function"
+      ? window.confirm(`${employeeName} is an employee with portal access. A Viewer can read everyone's salaries and payroll. Employees should have no role here and use My portal. Give Viewer anyway?`)
+      : true;
+
+    if (!ok) {
+      await loadSettingsUsers();
+      return;
+    }
+  }
 
   const { error } = await supabaseClient.rpc("set_user_role", {
     p_email: email,

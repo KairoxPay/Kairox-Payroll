@@ -246,10 +246,12 @@
       box.querySelector("select").addEventListener("change", (event) => switchCompany(event.target.value));
     }
 
+    const slot = aside.querySelector("#kxCompanySlot");
     const brand = aside.querySelector(".brand");
     const nav = aside.querySelector("nav, .sidebar-nav, .payroll-navigation");
 
-    if (brand && brand.parentNode === aside) brand.after(box);
+    if (slot) slot.appendChild(box);
+    else if (brand && brand.parentNode === aside) brand.after(box);
     else if (nav && nav.parentNode) nav.parentNode.insertBefore(box, nav);
     else aside.insertBefore(box, aside.firstChild);
   }
@@ -421,8 +423,15 @@
     document.body.appendChild(element);
 
     const rect = trigger.getBoundingClientRect();
-    element.style.top = `${Math.round(rect.bottom + 8)}px`;
-    element.style.right = `${Math.max(12, Math.round(window.innerWidth - rect.right))}px`;
+
+    if (trigger.closest && trigger.closest(".kx-sidebar")) {
+      // From the bottom of the sidebar: open upwards, lined up with the left edge of the button.
+      element.style.bottom = `${Math.max(12, Math.round(window.innerHeight - rect.top + 8))}px`;
+      element.style.left = `${Math.max(12, Math.round(rect.left))}px`;
+    } else {
+      element.style.top = `${Math.round(rect.bottom + 8)}px`;
+      element.style.right = `${Math.max(12, Math.round(window.innerWidth - rect.right))}px`;
+    }
 
     trigger.setAttribute("aria-expanded", "true");
     openPanel = { element, trigger };
@@ -723,98 +732,176 @@
     updateBadge();
   }
 
-  /* ---------- sidebar links ---------- */
-  // Pages written earlier have sidebars without Compliance, Documents or Support, or with dead links.
-  // This makes every sidebar point at the real pages and adds the missing ones.
-  const NAV_PAGES = {
-    home: "dashboard-v2.html", dashboard: "dashboard-v2.html", employees: "employees-v2.html", people: "people.html", leave: "leave.html", leavers: "leavers.html", payroll: "payroll.html",
-    payslips: "payslips.html", compliance: "compliance.html", reports: "reports.html", documents: "documents.html",
-    settings: "settings.html", support: "support.html", "my portal": "me.html"
+  /* ---------- the sidebar (one design, built here, on every page) ---------- */
+  // Every page used to carry its own sidebar, written and styled differently. This builds the same one everywhere,
+  // from the person's role, and replaces whatever the page had. The page's content is not touched.
+  const SIDEBAR_ICONS = {
+    home: '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+    users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    team: '<path d="M18 21a8 8 0 0 0-16 0"/><circle cx="10" cy="8" r="5"/><path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/>',
+    calendar: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/>',
+    leaver: '<path d="M2 21a8 8 0 0 1 13.292-6"/><circle cx="10" cy="8" r="5"/><path d="M22 19h-6"/>',
+    payroll: '<circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/>',
+    payslip: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M14 8H8"/><path d="M16 12H8"/><path d="M13 16H8"/>',
+    shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+    chart: '<line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/>',
+    folder: '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+    settings: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+    help: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+    portal: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/>',
+    chevron: '<path d="m6 9 6 6 6-6"/>'
   };
-  const NAV_ICONS = { people: "users-round", "my portal": "circle-user", leave: "calendar-days", leavers: "user-minus", compliance: "shield-check", documents: "folder", support: "circle-help", settings: "settings" };
-  const NAV_LABELS = { people: "People", "my portal": "My portal", leave: "Leave", leavers: "Leavers", compliance: "Compliance", documents: "Documents", support: "Support", settings: "Settings" };
 
-  function navKey(el) {
-    return String(el.textContent || "").replace(/\s+/g, " ").trim().toLowerCase();
+  const sidebarIcon = (name, cls = "kx-icon") =>
+    `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${SIDEBAR_ICONS[name] || ""}</svg>`;
+
+  // Detail pages sit under the page they belong to.
+  const PAGE_PARENT = {
+    "employee-profile.html": "employees-v2.html", "edit-employee.html": "employees-v2.html", "add-employee.html": "employees-v2.html",
+    "payslip.html": "payslips.html", "p45.html": "leavers.html", "index.html": "dashboard-v2.html", "": "dashboard-v2.html"
+  };
+
+  // What each kind of person sees, in groups. HR officers, managers and employees see only their own pages.
+  function sidebarGroups(kind, hasPortal) {
+    const item = (href, label, icon) => ({ href, label, icon });
+    const portal = hasPortal ? [item("me.html", "My portal", "portal")] : [];
+
+    if (kind === "employee") {
+      return [{ items: [item("me.html", "My portal", "portal"), item("support.html", "Support", "help")] }];
+    }
+    if (kind === "hr") {
+      return [{ items: [item("people.html", "People", "team"), item("leave.html", "Leave", "calendar"), item("documents.html", "Documents", "folder"), item("support.html", "Support", "help"), ...portal] }];
+    }
+    if (kind === "manager") {
+      return [{ items: [item("people.html", "My team", "team"), item("leave.html", "Leave", "calendar"), item("support.html", "Support", "help"), ...portal] }];
+    }
+
+    return [
+      { items: [item("dashboard-v2.html", "Home", "home")] },
+      { title: "People", items: [item("employees-v2.html", "Employees", "users"), item("people.html", "Team & access", "team"), item("leave.html", "Leave", "calendar"), item("leavers.html", "Leavers", "leaver")] },
+      { title: "Pay", items: [item("payroll.html", "Payroll", "payroll"), item("payslips.html", "Payslips", "payslip"), item("reports.html", "Reports", "chart"), item("compliance.html", "Compliance", "shield")] },
+      { title: "Company", items: [item("documents.html", "Documents", "folder"), item("settings.html", "Settings", "settings"), item("support.html", "Support", "help"), ...portal] }
+    ];
   }
 
-  function fixNavigation(extra = []) {
+  function cachedKind() {
+    try { return localStorage.getItem("kairoxSidebarKind") || null; } catch (error) { return null; }
+  }
+
+  function injectSidebarStyles() {
+    if (document.getElementById("kxSidebarStyles")) return;
+
+    const style = document.createElement("style");
+    style.id = "kxSidebarStyles";
+    style.textContent = `
+      .kx-layout { display: grid !important; grid-template-columns: 264px minmax(0, 1fr) !important; align-items: start; min-height: 100vh; }
+      aside.kx-sidebar { position: sticky; top: 0; align-self: start; display: flex; flex-direction: column; box-sizing: border-box; width: auto; height: 100vh; min-height: 0;
+        margin: 0; padding: 18px 14px 14px; overflow-y: auto; color: #fff; background: linear-gradient(180deg, #24104f 0%, #32156d 55%, #211044 100%);
+        font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .kx-sidebar *, .kx-sidebar *::before, .kx-sidebar *::after { box-sizing: border-box; }
+      .kx-brand { display: block; flex: 0 0 auto; margin: 0 2px 14px; padding: 8px 10px; background: #fff; border-radius: 14px; }
+      .kx-brand img { display: block; width: 100%; max-width: 180px; height: auto; margin: 0 auto; }
+      .kx-sidebar .kx-company { margin: 0 2px 12px; }
+      .kx-nav { display: flex; flex: 1 1 auto; flex-direction: column; gap: 2px; min-height: 0; overflow-y: auto; padding-right: 2px; }
+      .kx-group { margin: 14px 12px 5px; color: rgba(255, 255, 255, .52); font-size: 11px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
+      .kx-nav > .kx-group:first-child { margin-top: 2px; }
+      .kx-link { display: flex; align-items: center; gap: 12px; min-height: 42px; padding: 9px 12px; border-radius: 11px; color: #eee9f8; font-size: 14px; font-weight: 650;
+        line-height: 1.2; text-decoration: none; transition: background .18s ease, color .18s ease; }
+      .kx-link:hover { color: #fff; background: rgba(255, 255, 255, .09); }
+      .kx-link[aria-current="page"] { color: #fff; background: linear-gradient(135deg, rgba(120, 67, 207, .95), rgba(83, 37, 158, .95)); box-shadow: 0 8px 18px rgba(10, 4, 30, .22); }
+      .kx-link:focus-visible, .kx-user:focus-visible, .kx-bell:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+      .kx-icon { flex: 0 0 auto; width: 20px; height: 20px; }
+      .kx-foot { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, .13); }
+      .kx-user { display: flex; flex: 1 1 auto; align-items: center; gap: 11px; min-width: 0; padding: 9px 10px; border: 0; border-radius: 12px; color: #fff;
+        background: rgba(255, 255, 255, .07); font: inherit; text-align: left; cursor: pointer; }
+      .kx-user:hover { background: rgba(255, 255, 255, .12); }
+      .kx-avatar { display: grid; flex: 0 0 auto; place-items: center; width: 38px; height: 38px; border-radius: 50%; color: #fff; font-size: 14px; font-weight: 700;
+        background: linear-gradient(135deg, #2cb8b3, #1a8da0); }
+      .kx-user .user-details { display: grid; flex: 1 1 auto; gap: 2px; min-width: 0; }
+      .kx-user .user-details strong { overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+      .kx-user .user-details span { overflow: hidden; color: #cbc3dc; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+      .kx-chevron { flex: 0 0 auto; width: 16px; height: 16px; color: #cbc3dc; }
+      .kx-bell { position: relative; display: grid; flex: 0 0 auto; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 12px; color: #fff;
+        background: rgba(255, 255, 255, .07); cursor: pointer; }
+      .kx-bell:hover { background: rgba(255, 255, 255, .12); }
+      .kx-bell svg { width: 20px; height: 20px; }
+      .kx-bell .notification-count { position: absolute; top: 3px; right: 3px; display: grid; place-items: center; min-width: 18px; height: 18px; padding: 0 4px; border: 0;
+        border-radius: 999px; color: #fff; background: #f97316; font-size: 11px; font-weight: 700; }
+      .kx-bell .notification-count[hidden] { display: none; }
+      @media (max-width: 900px) {
+        .kx-layout { grid-template-columns: 76px minmax(0, 1fr) !important; }
+        aside.kx-sidebar { padding: 14px 8px; }
+        .kx-brand { padding: 6px; } .kx-sidebar .kx-company, .kx-group, .kx-link span, .kx-user .user-details, .kx-chevron { display: none; }
+        .kx-link { justify-content: center; padding: 10px; } .kx-foot { flex-direction: column; } .kx-user { justify-content: center; padding: 8px; }
+      }
+      @media (max-width: 620px) {
+        .kx-layout { display: block !important; }
+        aside.kx-sidebar { position: static; height: auto; padding: 14px; }
+        .kx-sidebar .kx-company { display: grid; } .kx-link span { display: inline; } .kx-link { justify-content: flex-start; padding: 9px 12px; }
+        .kx-nav { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); overflow: visible; }
+        .kx-foot { display: none; }
+      }
+      @media print { aside.kx-sidebar { display: none !important; } .kx-layout { display: block !important; } }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // Builds (or rebuilds) the sidebar. Safe to call again: it only redraws when what it would show has changed.
+  function renderSidebar() {
     try {
-      document.querySelectorAll("aside").forEach((aside) => {
-        const found = {};
-        const controls = [...aside.querySelectorAll("a, button")].filter((el) => !el.matches("[data-logout], .sidebar-brand, .payroll-brand"));
+      const aside = document.querySelector("aside");
+      if (!aside) return;
 
-        controls.forEach((el) => {
-          const key = navKey(el);
-          const page = NAV_PAGES[key];
-          if (!page) return;
+      const kind = roleKind() || cachedKind() || "staff";
+      const hasPortal = !!(profile.employee) && kind !== "employee";
+      const roleText = profile.signedIn ? ROLE_LABELS[profile.role] || (profile.employee ? "Employee" : "") : "";
+      const here = (window.location.pathname.split("/").pop() || "").toLowerCase();
+      const current = PAGE_PARENT[here] || here;
+      const hasTopbarBell = !!document.querySelector(".notification-button");
+      const key = [kind, hasPortal, current, roleText, hasTopbarBell].join("|");
 
-          found[key] = el;
+      if (aside.classList.contains("kx-sidebar") && aside.dataset.kxKey === key) return;
 
-          if (el.tagName === "A") {
-            if (el.getAttribute("href") !== page) el.setAttribute("href", page);
-          } else {
-            el.removeAttribute("disabled");
-            el.removeAttribute("aria-disabled");
-            el.removeAttribute("title");
-            if (!el.dataset.kxNav) {
-              el.dataset.kxNav = page;
-              el.addEventListener("click", () => { window.location.href = page; });
-            }
-          }
-        });
+      injectStyles();
+      injectSidebarStyles();
 
-        const anchor = Object.values(found).find((el) => el.tagName === "A");
-        if (!anchor) return;
+      const groups = sidebarGroups(kind, hasPortal);
+      const home = kind === "employee" ? "me.html" : kind === "hr" || kind === "manager" ? "people.html" : "dashboard-v2.html";
+      const links = groups
+        .map((g) => (g.title ? `<div class="kx-group">${esc(g.title)}</div>` : "") +
+          g.items.map((i) => `<a class="kx-link" href="${esc(i.href)}" title="${esc(i.label)}"${i.href === current ? ' aria-current="page"' : ""}>${sidebarIcon(i.icon)}<span>${esc(i.label)}</span></a>`).join(""))
+        .join("");
 
-        const links = () => [...aside.querySelectorAll("a")].filter((el) => !el.matches("[data-logout], .sidebar-brand, .payroll-brand"));
-        const lastLink = () => links().pop();
+      aside.className = "kx-sidebar";
+      aside.removeAttribute("style");
+      aside.dataset.kxKey = key;
+      aside.innerHTML =
+        `<a class="kx-brand" href="${home}" aria-label="Kairox Pay"><img src="assets/images/kairox-pay-logo.png" alt="Kairox Pay"></a>` +
+        '<div id="kxCompanySlot"></div>' +
+        `<nav class="kx-nav" aria-label="Main">${links}</nav>` +
+        '<div class="kx-foot">' +
+        `<button type="button" class="kx-user" aria-haspopup="dialog" aria-expanded="false"><span class="user-avatar kx-avatar">${esc(profile.initials || "?")}</span>` +
+        `<span class="user-details"><strong>${esc(profile.signedIn ? profile.name : "Not signed in")}</strong><span>${esc(roleText)}</span></span>${sidebarIcon("chevron", "kx-chevron")}</button>` +
+        (hasTopbarBell ? "" : `<button type="button" class="kx-bell" aria-haspopup="dialog" aria-expanded="false" aria-label="Notifications">${BELL}<span class="notification-count" hidden>0</span></button>`) +
+        "</div>";
 
-        // Where each added link goes: Compliance before Reports, Documents after Reports, Support after Settings.
-        const insertion = {
-          people: () => (found.employees ? { ref: found.employees, side: "after" } : { ref: lastLink(), side: "after" }),
-          leave: () => (found.people ? { ref: found.people, side: "after" } : found.employees ? { ref: found.employees, side: "after" } : { ref: lastLink(), side: "after" }),
-          leavers: () => (found.leave ? { ref: found.leave, side: "after" } : found.employees ? { ref: found.employees, side: "after" } : { ref: lastLink(), side: "after" }),
-          "my portal": () => ({ ref: found.support || lastLink(), side: "after" }),
-          compliance: () => (found.reports ? { ref: found.reports, side: "before" } : { ref: lastLink(), side: "after" }),
-          documents: () => ({ ref: found.reports || found.compliance || lastLink(), side: "after" }),
-          support: () => ({ ref: found.settings || found.documents || lastLink(), side: "after" })
-        };
+      if (aside.parentElement) aside.parentElement.classList.add("kx-layout");
 
-        ["people", "leave", "leavers", "compliance", "documents", "support", ...extra].forEach((key) => {
-          if (found[key]) return;
+      const card = aside.querySelector(".kx-user");
+      makeInteractive(card, "Open your profile menu", openProfileMenu);
+      const bell = aside.querySelector(".kx-bell");
+      if (bell) makeInteractive(bell, "Notifications", (el) => showPanel(el, "Notifications", notificationsHtml()));
 
-          const clone = anchor.cloneNode(true);
-          clone.setAttribute("href", NAV_PAGES[key]);
-          clone.classList.remove("active");
-          clone.removeAttribute("aria-current");
-
-          const icon = clone.querySelector("[data-lucide]");
-          if (icon) icon.setAttribute("data-lucide", NAV_ICONS[key]);
-
-          const label = clone.querySelector("span:last-of-type") || clone;
-          if (label === clone) {
-            [...clone.childNodes].forEach((node) => { if (node.nodeType === 3) node.textContent = ""; });
-            clone.appendChild(document.createTextNode(NAV_LABELS[key]));
-          } else {
-            label.textContent = NAV_LABELS[key];
-          }
-
-          const { ref, side } = insertion[key]();
-          ref.parentNode.insertBefore(clone, side === "before" ? ref : ref.nextSibling);
-          found[key] = clone;
-        });
-
-        if (window.lucide && typeof window.lucide.createIcons === "function") window.lucide.createIcons();
-      });
+      mountCompanySwitcher();
+      updateBadge();
     } catch (error) {
-      console.error("Sidebar links could not be updated:", error);
+      console.error("The sidebar could not be drawn:", error);
     }
   }
 
   /* ---------- what each kind of person may open ---------- */
-  // HR officers, managers and employees never see pay screens. This tidies the sidebar and explains the page; the real
-  // protection is in the database, which refuses them the data whatever the page does.
+  // HR officers, managers and employees never see pay screens. This explains the page; the real protection is in the
+  // database, which refuses them the data whatever the page does.
   const APP_PAGES = [
     "dashboard-v2.html", "employees-v2.html", "employee-profile.html", "edit-employee.html", "add-employee.html", "payroll.html", "payslips.html",
     "payslip.html", "compliance.html", "reports.html", "documents.html", "settings.html", "leave.html", "leavers.html", "people.html", "me.html", "support.html"
@@ -835,22 +922,16 @@
   function applyRoleNavigation() {
     try {
       const kind = roleKind();
-      if (!kind) return;
 
-      fixNavigation(profile.employee ? ["my portal"] : []);
-      if (kind === "staff") return;
+      if (kind) {
+        try { localStorage.setItem("kairoxSidebarKind", kind); } catch (error) { /* storage can be unavailable */ }
+      }
+
+      renderSidebar();
+
+      if (!kind || kind === "staff") return;
 
       const allowed = ROLE_PAGES[kind];
-
-      document.querySelectorAll("aside").forEach((aside) => {
-        [...aside.querySelectorAll("a, button")]
-          .filter((el) => !el.matches("[data-logout], .sidebar-brand, .payroll-brand"))
-          .forEach((el) => {
-            const page = NAV_PAGES[navKey(el)];
-            if (!page || !allowed.includes(page)) el.style.display = "none";
-          });
-      });
-
       const here = (window.location.pathname.split("/").pop() || "").toLowerCase();
 
       if (APP_PAGES.includes(here) && !allowed.includes(here)) {
@@ -870,15 +951,11 @@
     const avatar = document.querySelector(".topbar-avatar");
     const bell = document.querySelector(".notification-button");
 
-    fixNavigation();
+    renderSidebar();   // straight away, from what we know; redrawn once the person's role is loaded
 
-    if (typeof supabaseClient !== "undefined") {
-      window.KairoxCompany.ready().then(mountCompanySwitcher);
-    }
-
-    if (!avatar && !bell) return;
     if (typeof supabaseClient === "undefined") return;
 
+    window.KairoxCompany.ready().then(mountCompanySwitcher);
     injectStyles();
 
     if (bell) {

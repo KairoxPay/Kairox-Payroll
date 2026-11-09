@@ -159,7 +159,7 @@
 
     <small>MONTHLY GROSS SALARY</small>
 
-    <h1>JMD 400,000</h1>
+    <h1 id="salaryBannerAmount">—</h1>
 
 </div>
 
@@ -383,6 +383,21 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase.js"></script>
 <script src="js/employee-profile.js"></script>
+<script>
+  // The big salary banner used to be typed in by hand and so showed the same figure for every employee.
+  // It now follows the Gross Salary figure the page fills in. If something else has already filled the banner, it is left alone.
+  (function () {
+    var source = document.getElementById("employeeGross");
+    var banner = document.getElementById("salaryBannerAmount");
+    if (!source || !banner) return;
+    function follow() {
+      var text = (source.textContent || "").trim();
+      if (banner.textContent.trim() === "—" && text && text !== "JMD 0.00") banner.textContent = text;
+    }
+    new MutationObserver(follow).observe(source, { childList: true, characterData: true, subtree: true });
+    follow();
+  })();
+</script>
 
 </body>
 </html>

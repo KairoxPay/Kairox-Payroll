@@ -139,6 +139,8 @@
           <p class="settings-intro">
             To add someone, first create their login in Supabase (Authentication, then Users), then give them a role here.
             Someone with no role sees nothing.
+            <strong>Employees do not need a role here.</strong> People who only need their own payslips and leave get access
+            on the People page (Give access), which opens My portal and nothing else. A Viewer can see everyone's pay.
           </p>
           <div class="payroll-table-wrap">
             <table class="settings-table">
@@ -174,6 +176,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
   <script src="js/supabase.js"></script>
+  <script src="js/topbar.js"></script>
   <script src="js/app-settings.js"></script>
 </body>
 </html>

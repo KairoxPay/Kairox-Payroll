@@ -108,6 +108,7 @@ const FAQ = [
     a: `<ol><li>In Supabase, open <strong>Authentication</strong>, then <strong>Users</strong>, then <strong>Invite user</strong>, and enter their email. They get an email to set a password.</li>
       <li>In Kairox Pay, open <strong>People</strong> and click <strong>Give access</strong> next to their name. Type the same email.</li>
       <li>To make someone a manager, set who reports to them on the People page, then give the manager a <strong>Manager</strong> role in Settings. HR officers get the <strong>HR officer</strong> role there.</li></ol>
+      Employees do <strong>not</strong> need a role in Settings: leave them on "No staff access". Do not give an employee Viewer, which can read everyone's pay.
       Only an admin can give or remove access. Under Settings, <strong>Employee portal</strong> switches parts of the portal on or off. People who have left can still see their payslips and tax totals, and nothing else.`
   },
   {
