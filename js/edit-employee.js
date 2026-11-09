@@ -1,3 +1,43 @@
+// Pages that forgot the <script src="js/topbar.js"> line still get the Company box, the sidebar links and the
+// shared pay period: this loads it for them (once), and waits for it.
+function kairoxEnsureTopbar() {
+  if (window.KairoxCompany) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    try {
+      if (/jsdom/i.test(navigator.userAgent) || !document.head) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = "js/topbar.js";
+      script.onload = () => resolve();
+      script.onerror = () => resolve();
+      document.head.appendChild(script);
+      setTimeout(resolve, 4000);
+    } catch (error) {
+      resolve();
+    }
+  });
+}
+
+// Which company the signed-in person is working in (chosen with the company switcher). Kairox Exchange by default.
+function kairoxWorkspaceId() {
+  try {
+    return localStorage.getItem("kairoxWorkspace") || "kairox-exchange";
+  } catch (error) {
+    return "kairox-exchange";
+  }
+}
+
+async function getEditActor() {
+  const { data } = await supabaseClient.auth.getUser();
+  return data?.user?.email || "Unknown user";
+}
+
 const editEmployeeParams =
   new URLSearchParams(window.location.search);
 
@@ -34,16 +74,20 @@ async function loadEmployeeForEditing() {
   if (error) {
     console.error("Could not load employee:", error);
 
+    // If access is the problem, the access message (sign in / read-only) is the useful one.
+    if (editAccessChecked && !editAccessAllowed) {
+      return;
+    }
+
     showEmployeeFormMessage(
       "Could not load the employee record.",
       "error"
     );
 
-    originalEmployee = data;
-
     return;
   }
 
+  originalEmployee = data;
   populateEmployeeEditForm(data);
   updateEmployeeEditLinks();
 }
@@ -93,6 +137,11 @@ function updateEmployeeEditLinks() {
 
 async function saveEmployeeChanges(event) {
   event.preventDefault();
+
+  if (editAccessChecked && !editAccessAllowed) {
+    showEmployeeFormMessage("You do not have permission to change employee records.", "error");
+    return;
+  }
 
   
 
@@ -160,7 +209,7 @@ if (isEditMode) {
     .from("employees")
     .insert({
       ...updatedEmployee,
-      workspace: "kairox-exchange"
+      workspace: kairoxWorkspaceId()
     })
     .select("id")
     .single();
@@ -219,14 +268,14 @@ await supabaseClient
   .from("employee_activity")
   .insert({
     employee_id: editEmployeeId,
-    workspace: "kairox-exchange",
+    workspace: kairoxWorkspaceId(),
     activity_type: "profile_updated",
     activity_title: "Employee profile updated",
     activity_description:
       changes.length
         ? changes.join("\n")
         : "Employee profile updated.",
-    created_by: "HR"
+    created_by: await getEditActor()
   });
 }
   if (!isEditMode && savedEmployeeId) {
@@ -234,12 +283,12 @@ await supabaseClient
     .from("employee_activity")
     .insert({
       employee_id: savedEmployeeId,
-      workspace: "kairox-exchange",
+      workspace: kairoxWorkspaceId(),
       activity_type: "employee_created",
       activity_title: "Employee created",
       activity_description:
         "The employee record was created.",
-      created_by: "HR"
+      created_by: await getEditActor()
     });
 }
     showEmployeeFormMessage(
@@ -275,6 +324,46 @@ if (employeeEditForm) {
   );
 }
 
+let editAccessChecked = false;
+let editAccessAllowed = false;
+
+async function applyEditAccess() {
+  const lock = (message) => {
+    editAccessAllowed = false;
+    employeeEditForm
+      ?.querySelectorAll("input, select, button")
+      .forEach((control) => {
+        control.disabled = true;
+      });
+    showEmployeeFormMessage(message, "error");
+  };
+
+  const { data: sessionData } = await supabaseClient.auth.getSession();
+
+  if (!sessionData || !sessionData.session) {
+    editAccessChecked = true;
+    lock("You are not signed in. Sign in at login.html, then return to Employees.");
+    return;
+  }
+
+  const { data: role, error } = await supabaseClient.rpc("get_my_role", { p_workspace: kairoxWorkspaceId() });
+  editAccessChecked = true;
+
+  if (error || !role) {
+    lock("Your account does not have a payroll role. Ask an admin to give you access.");
+    return;
+  }
+
+  if (role !== "admin" && role !== "director" && role !== "payroll") {
+    lock("You have read-only access. Ask an admin or payroll clerk to change employee records.");
+    return;
+  }
+
+  editAccessAllowed = true;
+}
+
+applyEditAccess();
+
 if (isEditMode) {
 
     loadEmployeeForEditing();
@@ -300,3 +389,5 @@ document.getElementById("cancelEditLink")
 .href="employees-v2.html";
 
 }
+
+kairoxEnsureTopbar();

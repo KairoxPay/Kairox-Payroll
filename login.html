@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | Sign in</title>
+  <style>
+    :root {
+      --teal: #0a8782;
+      --teal-bright: #14b3a6;
+      --teal-soft: #e3f5f3;
+      --navy: #0f1536;
+      --muted: #566078;
+      --line: #aab6c4;
+      --error: #b91c1c;
+      --ok: #087b4d;
+    }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--navy);
+      background:
+        radial-gradient(52% 50% at 56% -8%, rgba(112, 212, 203, 0.30), rgba(112, 212, 203, 0) 72%),
+        radial-gradient(42% 38% at 0% 104%, rgba(86, 196, 186, 0.42), rgba(86, 196, 186, 0) 72%),
+        #f7fbfc;
+    }
+
+    .login-page {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 4vw;
+      align-items: center;
+      min-height: 100vh;
+      padding: 44px 4.5vw 32px 6vw;
+    }
+
+    /* ---------- left: the story ---------- */
+    .hero { display: flex; flex-direction: column; gap: 0; min-width: 0; }
+    .logo { display: inline-block; align-self: flex-start; margin-bottom: 44px; }
+    .logo img { display: block; width: 200px; max-width: 100%; height: auto; mix-blend-mode: multiply; }
+    .eyebrow-hero { margin: 0 0 14px; color: var(--teal); font-size: .95rem; font-weight: 700; letter-spacing: .28em; }
+    .hero h2 { margin: 0 0 18px; max-width: 8.8em; font-size: clamp(2.6rem, 4.6vw, 4.3rem); line-height: 1.02; letter-spacing: -0.035em; }
+    .swoosh { position: relative; display: inline-block; padding-bottom: .12em; }
+    .swoosh::after {
+      content: ""; position: absolute; left: 0; right: -4%; bottom: -.04em; height: .2em;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 250 16' preserveAspectRatio='none'%3E%3Cpath d='M3 11 C 70 2, 170 1, 247 8' fill='none' stroke='%2314b3a6' stroke-width='4.5' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center / 100% 100%;
+    }
+    .lead { margin: 0 0 28px; color: var(--muted); font-size: 1.3rem; line-height: 1.5; }
+    .points { margin: 0; padding: 0; list-style: none; display: grid; gap: 16px; }
+    .points li { display: flex; align-items: center; gap: 16px; font-size: 1.15rem; color: #20274a; }
+    .points svg { flex: 0 0 auto; width: 30px; height: 30px; }
+
+    /* ---------- the laptop and plant (decorative) ---------- */
+    .showcase { position: relative; margin-top: 44px; max-width: 640px; font-size: clamp(7.5px, 0.82vw, 13px); padding-left: 7em; }
+    .plant { position: absolute; left: -1em; bottom: 1.6em; width: 12em; height: 17em; z-index: 2; }
+    .laptop { position: relative; width: 100%; }
+    .lid { padding: .85em .85em .95em; background: linear-gradient(#323f4a, #202a33); border-radius: 1.1em 1.1em .3em .3em; box-shadow: 0 .5em 1.6em rgba(20, 40, 60, .22); }
+    .screen { display: grid; grid-template-columns: 10.5em minmax(0, 1fr); height: 21em; overflow: hidden; background: #fff; border-radius: .35em; }
+    .s-side { padding: 1em .8em; background: #25313b; color: #dfe7ee; }
+    .s-logo { display: flex; align-items: center; gap: .5em; margin-bottom: 1.4em; font-size: .85em; font-weight: 800; letter-spacing: .06em; line-height: 1.05; color: #fff; }
+    .s-logo b { display: grid; place-items: center; width: 2em; height: 2em; border-radius: .45em; background: linear-gradient(135deg, #14b3a6, #4b2394); font-size: 1.1em; }
+    .s-side ul { margin: 0; padding: 0; list-style: none; display: grid; gap: .55em; }
+    .s-side li { display: flex; align-items: center; gap: .6em; padding: .65em .7em; border-radius: .55em; font-size: .78em; font-weight: 600; }
+    .s-side li::before { content: ""; width: .95em; height: .95em; border: .12em solid currentColor; border-radius: .25em; opacity: .85; }
+    .s-side li.on { color: #fff; background: #15b3a1; }
+    .s-main { padding: 1em 1.1em; background: #fff; min-width: 0; }
+    .s-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1em; }
+    .s-head strong { display: block; font-size: 1.15em; }
+    .s-head small { color: #5a6478; font-size: .72em; }
+    .s-badge { padding: .35em 1em; border-radius: 999px; background: #d8f3ee; color: #0a8b7f; font-size: .78em; font-weight: 800; }
+    .s-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .6em; margin-bottom: .9em; }
+    .s-stat { padding: .7em .5em; border: .08em solid #edf0f4; border-radius: .6em; text-align: center; font-size: .72em; box-shadow: 0 .15em .5em rgba(30, 50, 70, .06); }
+    .s-stat i { display: block; width: 2em; height: 2em; margin: 0 auto .5em; border-radius: .5em; border: .18em solid currentColor; }
+    .s-stat span { display: block; margin-bottom: .35em; color: #46506a; font-size: .85em; }
+    .s-stat strong { display: block; font-size: .95em; }
+    .s-steps { display: flex; align-items: center; justify-content: space-between; gap: .6em; padding: .9em 1em; border: .08em solid #edf0f4; border-radius: .7em; font-size: .72em; font-weight: 700; box-shadow: 0 .15em .5em rgba(30, 50, 70, .06); }
+    .s-step { display: flex; align-items: center; gap: .55em; white-space: nowrap; }
+    .s-step svg { width: 2.2em; height: 2.2em; }
+    .s-line { flex: 1; height: .12em; background: #e3e8ee; }
+    .base { height: 1.15em; margin: 0 -5%; background: linear-gradient(#edf0f3, #c6ced5); border-radius: 0 0 2em 2em; box-shadow: 0 .8em 1.2em rgba(20, 40, 60, .18); }
+
+    /* ---------- right: the card ---------- */
+    .panel { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+    .card { width: 100%; max-width: 560px; padding: 46px 50px 38px; background: #fff; border: 1px solid rgba(15, 21, 54, .05); border-radius: 28px; box-shadow: 0 30px 70px rgba(18, 60, 80, .13); }
+    .eyebrow { margin: 0 0 10px; color: var(--teal); font-size: 1.05rem; font-weight: 800; letter-spacing: .12em; }
+    h1 { margin: 0 0 10px; font-size: clamp(2.2rem, 3.4vw, 3rem); line-height: 1.05; letter-spacing: -0.03em; }
+    .sub { margin: 0 0 30px; color: var(--muted); font-size: 1.1rem; }
+
+    label { display: flex; align-items: center; gap: 12px; font-size: 1.02rem; font-weight: 800; }
+    label svg { width: 24px; height: 24px; flex: 0 0 auto; }
+    .label-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 24px; }
+    input {
+      width: 100%; min-height: 56px; margin-top: 10px; padding: 12px 18px; font: inherit; font-size: 1.05rem; color: var(--navy);
+      background: #fff; border: 1.5px solid var(--line); border-radius: 14px; outline: none;
+    }
+    input::placeholder { color: #7b879b; }
+    input:focus { border-color: var(--teal); box-shadow: 0 0 0 4px rgba(10, 135, 130, .16); }
+    .password-wrap { position: relative; }
+    .password-wrap input { padding-right: 60px; }
+    .toggle-password { position: absolute; top: 10px; right: 6px; width: 52px; height: 56px; display: flex; align-items: center; justify-content: center; background: none; border: 0; border-radius: 12px; color: var(--muted); cursor: pointer; }
+    .toggle-password:hover { color: var(--teal); }
+    .toggle-password svg { width: 24px; height: 24px; }
+    .toggle-password .eye-off { display: none; }
+    .toggle-password[aria-pressed="true"] .eye { display: none; }
+    .toggle-password[aria-pressed="true"] .eye-off { display: block; }
+    .toggle-password:focus-visible, .link:focus-visible, .primary:focus-visible, .help a:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+
+    .link { margin-left: auto; background: none; border: 0; padding: 0; color: var(--teal); font: inherit; font-size: .98rem; font-weight: 700; text-decoration: underline; cursor: pointer; }
+    #loginMessage { min-height: 22px; margin: 12px 0 0; font-size: .98rem; font-weight: 700; line-height: 1.4; }
+    #loginMessage.error { color: var(--error); }
+    #loginMessage.ok { color: var(--ok); }
+
+    .primary {
+      width: 100%; height: 58px; min-height: 58px; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 12px;
+      font: inherit; font-size: 1.15rem; font-weight: 800; color: #fff; background: linear-gradient(135deg, #0a8a85, #076f6a);
+      border: 0; border-radius: 14px; cursor: pointer; box-shadow: 0 12px 24px rgba(7, 111, 106, .28);
+    }
+    .primary:hover { filter: brightness(1.07); }
+    .primary:disabled { opacity: .7; cursor: wait; }
+    .primary svg { width: 22px; height: 22px; }
+
+    .secure { display: flex; align-items: center; gap: 16px; margin-top: 24px; padding: 16px 20px; border-radius: 14px; background: var(--teal-soft); }
+    .secure svg { flex: 0 0 auto; width: 38px; height: 38px; color: var(--teal); }
+    .secure strong { display: block; margin-bottom: 3px; font-size: 1.05rem; }
+    .secure span { display: block; color: var(--muted); font-size: .92rem; line-height: 1.4; }
+    .help { margin: 24px 0 0; text-align: center; color: var(--navy); font-size: 1.05rem; }
+    .help a { color: var(--teal); font-weight: 800; }
+    .copyright { margin: 28px 0 0; color: var(--muted); font-size: .98rem; text-align: center; }
+
+    /* ---------- smaller screens ---------- */
+    @media (max-width: 1100px) {
+      .login-page { grid-template-columns: minmax(0, 1fr); gap: 28px; padding: 32px 22px 28px; align-items: start; }
+      .hero-copy, .showcase { display: none; }
+      .logo { margin-bottom: 0; }
+      .panel { align-items: stretch; }
+      .card { max-width: none; }
+    }
+    @media (max-width: 520px) { .card { padding: 32px 22px 28px; border-radius: 22px; } .logo img { width: 170px; } }
+    @media (prefers-reduced-motion: no-preference) { .primary, input, .toggle-password { transition: filter .15s ease, border-color .15s ease, box-shadow .15s ease; } }
+  </style>
+</head>
+<body>
+  <div class="login-page">
+    <section class="hero" aria-label="About Kairox Pay">
+      <a class="logo" href="login.html"><img src="assets/images/kairox-pay-logo.png" alt="Kairox Pay"></a>
+
+      <div class="hero-copy">
+        <p class="eyebrow-hero">PAYROLL MANAGEMENT</p>
+        <h2>Payroll made <span class="swoosh">simple.</span></h2>
+        <p class="lead">Manage your team and payroll with confidence.</p>
+        <ul class="points">
+          <li><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#14b3a6"/><path d="m9.5 16.5 4.5 4.5 8.5-9.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>PAYE, NIS, NHT and Education Tax calculated for you</li>
+          <li><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#14b3a6"/><path d="m9.5 16.5 4.5 4.5 8.5-9.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Approval before any payroll is processed</li>
+          <li><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#14b3a6"/><path d="m9.5 16.5 4.5 4.5 8.5-9.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Every change recorded in an audit trail</li>
+        </ul>
+      </div>
+
+      <div class="showcase" aria-hidden="true">
+        <svg class="plant" viewBox="0 0 120 170">
+          <defs>
+            <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7cc35a"/><stop offset="1" stop-color="#1f8a4c"/></linearGradient>
+            <linearGradient id="pot" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f4f4f2"/><stop offset="1" stop-color="#dcdcd8"/></linearGradient>
+          </defs>
+          <path d="M60 118 C 36 100, 22 70, 30 28 C 52 44, 62 80, 60 118Z" fill="url(#leaf)"/>
+          <path d="M60 118 C 70 84, 88 56, 112 44 C 112 84, 92 108, 60 118Z" fill="url(#leaf)" opacity=".92"/>
+          <path d="M60 118 C 48 96, 40 66, 52 12 C 74 40, 74 88, 60 118Z" fill="#46a64f"/>
+          <path d="M58 120 C 38 114, 12 100, 6 70 C 34 74, 54 92, 58 120Z" fill="#2f9a52"/>
+          <path d="M62 120 C 84 116, 106 104, 116 82 C 92 82, 68 96, 62 120Z" fill="#5ab04e"/>
+          <path d="M26 112 H 94 L 86 164 H 34 Z" fill="url(#pot)"/>
+          <ellipse cx="60" cy="112" rx="34" ry="6" fill="#cfcfca"/>
+        </svg>
+
+        <div class="laptop">
+          <div class="lid">
+            <div class="screen">
+              <div class="s-side">
+                <div class="s-logo"><b>K</b><span>KAIROX<br>PAY</span></div>
+                <ul><li>Dashboard</li><li>Employees</li><li class="on">Payroll</li><li>Payslips</li><li>Reports</li><li>Settings</li></ul>
+              </div>
+              <div class="s-main">
+                <div class="s-head"><div><strong>Payroll Dashboard</strong><small>November 1, 2026 – November 30, 2026</small></div><span class="s-badge">Draft</span></div>
+                <div class="s-stats">
+                  <div class="s-stat" style="color:#5b4bd6"><i></i><span>Employees</span><strong style="color:#0f1536">4</strong></div>
+                  <div class="s-stat" style="color:#1ea866"><i></i><span>Gross Payroll</span><strong style="color:#0f1536">J$563,076.91</strong></div>
+                  <div class="s-stat" style="color:#e5483d"><i></i><span>Total Deductions</span><strong style="color:#0f1536">J$75,042.07</strong></div>
+                  <div class="s-stat" style="color:#14b3a6"><i></i><span>Net Pay</span><strong style="color:#0f1536">J$488,034.84</strong></div>
+                </div>
+                <div class="s-steps">
+                  <span class="s-step"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="15" fill="#1ea866"/><path d="m9.5 16.5 4.5 4.5 8.5-9.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Draft Saved</span><i class="s-line"></i>
+                  <span class="s-step"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="15" fill="#1ea866"/><path d="m9.5 16.5 4.5 4.5 8.5-9.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Approved</span><i class="s-line"></i>
+                  <span class="s-step" style="color:#7a8497"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="15" fill="#dfe4ea"/><path d="m9.5 16.5 4.5 4.5 8.5-9.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Ready to Process</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="base"></div>
+        </div>
+      </div>
+    </section>
+
+    <main class="panel">
+      <div class="card">
+        <p class="eyebrow">KAIROX PAY</p>
+        <h1>Welcome back</h1>
+        <p class="sub">Sign in to your Kairox Pay account.</p>
+
+        <form id="loginForm" novalidate>
+          <label for="loginEmail">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 7 8.5 6.5L20.5 7"/></svg>
+            Email address
+          </label>
+          <input id="loginEmail" type="email" autocomplete="username" inputmode="email" placeholder="you@company.com" required>
+
+          <div class="label-row">
+            <label for="loginPassword">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/><circle cx="12" cy="15.5" r="1.2" fill="currentColor"/></svg>
+              Password
+            </label>
+            <button id="forgotButton" class="link" type="button">Forgot password?</button>
+          </div>
+          <div class="password-wrap">
+            <input id="loginPassword" type="password" autocomplete="current-password" required>
+            <button id="togglePassword" class="toggle-password" type="button" aria-label="Show password" aria-pressed="false">
+              <svg class="eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.9 5.2A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6A17.7 17.7 0 0 0 2 12s3.6 7 10 7c1.7 0 3.2-.4 4.5-1.1"/><path d="m2 2 20 20"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+            </button>
+          </div>
+
+          <div id="loginMessage" role="alert" aria-live="polite"></div>
+
+          <button id="loginButton" class="primary" type="submit">
+            <span id="loginButtonText">Sign in</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </form>
+
+        <div class="secure">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.6 3.1 8.3 7.5 9.5 4.4-1.2 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m8.8 12.2 2.4 2.4 4.2-4.6"/></svg>
+          <div><strong>Secure sign in</strong><span>Your account is protected, and payroll data is visible only to the people you give access to.</span></div>
+        </div>
+
+        <p class="help">Need help? <a href="mailto:kairoxpay@gmail.com">Contact support</a></p>
+      </div>
+      <p class="copyright">&copy; 2026 Kairox Technologies</p>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="js/supabase.js"></script>
+  <script>
+    // Only plain page names are allowed after signing in, so a crafted link cannot send you to another site.
+    async function loginTarget() {
+      const next = new URLSearchParams(window.location.search).get("next");
+      if (next && /^[a-z0-9-]+\.html$/i.test(next)) return next;
+      return homePage();
+    }
+
+    // Payroll staff go to the dashboard, HR officers and managers to People, and employees to their own portal.
+    async function homePage() {
+      try {
+        const stored = localStorage.getItem("kairoxWorkspace") || "kairox-exchange";
+        let { data: role } = await supabaseClient.rpc("get_my_role", { p_workspace: stored });
+
+        if (!role) {
+          const { data: spaces } = await supabaseClient.rpc("my_workspaces");
+
+          if (spaces && spaces.length) {
+            localStorage.setItem("kairoxWorkspace", spaces[0].workspace);
+            role = spaces[0].role;
+          }
+        }
+
+        if (["admin", "payroll", "viewer"].includes(role)) return "dashboard-v2.html";
+        if (role === "hr" || role === "manager") return "people.html";
+
+        const { data: mine } = await supabaseClient.rpc("my_employee", { p_workspace: null });
+
+        if (mine && mine.length) {
+          localStorage.setItem("kairoxWorkspace", mine[0].workspace);
+          return "me.html";
+        }
+      } catch (error) {
+        /* fall back to the dashboard */
+      }
+
+      return "dashboard-v2.html";
+    }
+
+    function showLoginMessage(text, kind) {
+      const box = document.getElementById("loginMessage");
+      box.textContent = text;
+      box.className = kind || "";
+    }
+
+    function setSigningIn(busy) {
+      document.getElementById("loginButton").disabled = busy;
+      document.getElementById("loginButtonText").textContent = busy ? "Signing in..." : "Sign in";
+    }
+
+    // Plain, kind wording for the errors people actually hit.
+    function friendlyAuthError(message) {
+      const text = String(message || "");
+
+      if (/invalid login credentials/i.test(text)) {
+        return "That email and password don't match. Check them and try again, or use Forgot password.";
+      }
+      if (/email not confirmed/i.test(text)) {
+        return "Your email address has not been confirmed yet. Check your inbox for the confirmation email.";
+      }
+      if (/rate limit|too many/i.test(text)) {
+        return "Too many attempts. Please wait a few minutes and try again.";
+      }
+      if (/email logins are disabled|email_provider_disabled/i.test(text)) {
+        return "Email and password sign-in is switched off for this project. An admin needs to turn the Email provider back on in Supabase (Authentication, then Sign In / Providers).";
+      }
+      if (/network|failed to fetch/i.test(text)) {
+        return "We could not reach the sign-in service. Check your internet connection and try again.";
+      }
+
+      return text || "Something went wrong. Please try again.";
+    }
+
+    async function redirectIfSignedIn() {
+      const { data } = await supabaseClient.auth.getSession();
+
+      if (data && data.session) {
+        window.location.href = await loginTarget();
+      }
+    }
+
+    document.getElementById("togglePassword").addEventListener("click", () => {
+      const input = document.getElementById("loginPassword");
+      const toggle = document.getElementById("togglePassword");
+      const show = input.type === "password";
+
+      input.type = show ? "text" : "password";
+      toggle.setAttribute("aria-pressed", String(show));
+      toggle.setAttribute("aria-label", show ? "Hide password" : "Show password");
+      input.focus();
+    });
+
+    document.getElementById("loginForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value;
+
+      if (!email || !password) {
+        showLoginMessage("Please enter your email and password.", "error");
+        return;
+      }
+
+      setSigningIn(true);
+      showLoginMessage("", "");
+
+      let result;
+
+      try {
+        result = await supabaseClient.auth.signInWithPassword({ email, password });
+      } catch (error) {
+        result = { error };
+      }
+
+      if (result.error) {
+        setSigningIn(false);
+        showLoginMessage(friendlyAuthError(result.error.message), "error");
+        return;
+      }
+
+      window.location.href = await loginTarget();
+    });
+
+    // The password-reset email opens index.html, which already has the "choose a new password" screen.
+    document.getElementById("forgotButton").addEventListener("click", async () => {
+      const email = document.getElementById("loginEmail").value.trim();
+
+      if (!email) {
+        showLoginMessage("Enter your email address first, then click Forgot password.", "error");
+        document.getElementById("loginEmail").focus();
+        return;
+      }
+
+      const redirectTo = new URL("index.html", window.location.href).href;
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
+
+      if (error) {
+        showLoginMessage(friendlyAuthError(error.message), "error");
+        return;
+      }
+
+      showLoginMessage("Password reset email sent. Check your inbox and spam folder.", "ok");
+    });
+
+    redirectIfSignedIn();
+  </script>
+</body>
+</html>

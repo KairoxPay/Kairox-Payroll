@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | Compliance</title>
+  <link rel="stylesheet" href="css/dashboard-v2.css">
+  <link rel="stylesheet" href="css/app-pages.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">K</div>
+        <div><h1>KAIROX</h1><p>Payroll</p></div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="dashboard-v2.html">
+          <i class="nav-icon" data-lucide="house"></i>
+          <span>Home</span>
+        </a>
+        <a class="nav-item" href="employees-v2.html">
+          <i class="nav-icon" data-lucide="users"></i>
+          <span>Employees</span>
+        </a>
+        <a class="nav-item" href="leave.html">
+          <i class="nav-icon" data-lucide="calendar-days"></i>
+          <span>Leave</span>
+        </a>
+        <a class="nav-item" href="leavers.html">
+          <i class="nav-icon" data-lucide="user-minus"></i>
+          <span>Leavers</span>
+        </a>
+        <a class="nav-item" href="payroll.html">
+          <i class="nav-icon" data-lucide="circle-dollar-sign"></i>
+          <span>Payroll</span>
+        </a>
+        <a class="nav-item" href="payslips.html">
+          <i class="nav-icon" data-lucide="receipt-text"></i>
+          <span>Payslips</span>
+        </a>
+        <a class="nav-item active" href="compliance.html" aria-current="page">
+          <i class="nav-icon" data-lucide="shield-check"></i>
+          <span>Compliance</span>
+        </a>
+        <a class="nav-item" href="reports.html">
+          <i class="nav-icon" data-lucide="chart-no-axes-column"></i>
+          <span>Reports</span>
+        </a>
+        <a class="nav-item" href="documents.html">
+          <i class="nav-icon" data-lucide="folder"></i>
+          <span>Documents</span>
+        </a>
+        <a class="nav-item" href="settings.html">
+          <i class="nav-icon" data-lucide="settings"></i>
+          <span>Settings</span>
+        </a>
+        <a class="nav-item" href="support.html">
+          <i class="nav-icon" data-lucide="circle-help"></i>
+          <span>Support</span>
+        </a>
+      </nav>
+
+      <a href="dashboard-v2.html" class="sidebar-brand">
+        <img src="assets/images/kairox-pay-logo.png" alt="Kairox Pay" class="sidebar-brand-logo">
+      </a>
+
+      <div class="user-card" data-logout title="Click to sign out" style="cursor:pointer">
+        <div class="user-avatar">?</div>
+        <div class="user-details"><strong>Not signed in</strong><span id="userRoleLabel">&nbsp;</span></div>
+        <span>⌄</span>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <div id="pageBanner" class="page-banner" hidden></div>
+
+      <header class="topbar">
+        <div>
+          <h2>Compliance</h2>
+          <p>Statutory deadlines, amounts to remit and what you have filed.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="notification-button" aria-label="Notifications">♢<span class="notification-count">0</span></button>
+          <div class="topbar-avatar">?</div>
+        </div>
+      </header>
+
+      <section class="stat-grid" aria-label="Compliance summary">
+        <article class="stat-card" id="statNext"><span>Next deadline</span><strong id="statNextTitle">—</strong><p id="statNextDetail">Loading…</p></article>
+        <article class="stat-card" id="statRemit"><span>To remit next (S01)</span><strong id="statRemitAmount">—</strong><p id="statRemitDetail">Loading…</p></article>
+        <article class="stat-card" id="statOverdue"><span>Overdue filings</span><strong id="statOverdueCount">—</strong><p id="statOverdueDetail">Loading…</p></article>
+        <article class="stat-card" id="statFiled"><span>Filed this year</span><strong id="statFiledCount">—</strong><p>Recorded in Kairox Pay</p></article>
+      </section>
+
+      <section class="page-card" id="s01Card">
+        <div class="page-card-head"><div><h3>Monthly statutory remittance (S01)</h3><p>PAYE, NIS, NHT, Education Tax and HEART/NSTA for each month's processed payrolls, with the employer's share. Due by the 14th of the following month.</p></div></div>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Pay month</th><th class="num">Payrolls</th><th class="num">From employees</th><th class="num">Employer share</th><th class="num">Amount to remit</th><th>Due date</th><th>Status</th><th></th></tr></thead>
+            <tbody id="s01Body"><tr class="empty-row"><td colspan="8">Loading…</td></tr></tbody>
+          </table>
+        </div>
+        <p class="note">Kairox Pay does not file returns or pay TAJ for you. File and pay on the Jamaica Tax Portal, then record it here so you have a history. Confirm every form and date with TAJ: a due date that falls on a weekend moves to Monday here, but public holidays are not accounted for.</p>
+      </section>
+
+      <section class="page-card" id="annualCard">
+        <div class="page-card-head"><div><h3>Annual filings</h3><p>The employer's annual return (S02), due by 31 March, and the P24 certificate each employee must receive at the end of the year, for each year you processed payroll.</p></div></div>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Filing</th><th>Tax year</th><th>Due date</th><th>Status</th><th></th></tr></thead>
+            <tbody id="annualBody"><tr class="empty-row"><td colspan="5">Loading…</td></tr></tbody>
+          </table>
+        </div>
+        <p class="note">
+          <strong>P24:</strong> TAJ's Employers' Guide says each employee must be given a P24, a certificate of gross emoluments and tax deducted, "at the end of each year". It gives no fixed date, so the date shown is only our target (31 January), so employees can file their own returns by 15 March.
+          <strong>P45</strong> (for someone who leaves part-way through the year) is prepared from the <a href="leavers.html">Leavers</a> page.
+          <strong>S02</strong> is filed online by 31 March; the guide (2019) lists a $5,000 penalty for each month it is late. Employers must keep payroll records for at least seven years.
+          Source: <a href="https://www.jamaicatax.gov.jm/documents/10194/14559577/Employers_guide_13122019.pdf/9d09b82e-e215-6aaa-72c8-7b8a3dd7f061" target="_blank" rel="noopener">TAJ Employers' Guide</a>. Always confirm with TAJ.
+        </p>
+      </section>
+
+      <section class="page-card" id="summaryCard">
+        <div class="page-card-head"><div><h3>Annual summary for each employee</h3><p>What each person was paid and had deducted across your processed payrolls for the year: the figures behind their P24 and the S02 return.</p></div><div class="row-actions" style="align-items:flex-end"><div class="field" style="min-width:150px"><label for="summaryYear">Tax year</label><select id="summaryYear"></select></div><button class="btn" id="exportSummary" type="button">Export CSV</button></div></div>
+        <p class="muted small" id="summaryNote"></p>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Employee</th><th class="num">Gross pay</th><th class="num">PAYE</th><th class="num">NIS</th><th class="num">NHT</th><th class="num">Education Tax</th><th class="num">Employer NIS</th><th class="num">Employer NHT</th><th class="num">Employer Ed Tax</th><th class="num">Employer HEART</th></tr></thead>
+            <tbody id="summaryBody"><tr class="empty-row"><td colspan="10">Loading…</td></tr></tbody>
+          </table>
+        </div>
+        <p class="note">These totals add up your processed payrolls for the calendar year. Check them against your own records before you give out P24 certificates or file S02. Payrolls processed by an older version may lack the employer shares.</p>
+      </section>
+
+      <section class="page-card" id="upcomingCard">
+        <div class="page-card-head"><div><h3>Coming up</h3><p>The next filings that have not been recorded as done.</p></div></div>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Filing</th><th>Due</th><th>When</th><th class="num">Amount</th></tr></thead>
+            <tbody id="upcomingBody"><tr class="empty-row"><td colspan="4">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="page-card" id="historyCard">
+        <div class="page-card-head"><div><h3>Filing history</h3><p>Everything recorded as filed, newest first.</p></div><button class="btn" id="exportFilings" type="button">Export CSV</button></div>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Filing</th><th>Period</th><th>Due</th><th>Filed on</th><th class="num">Paid</th><th>Reference</th><th>Recorded by</th></tr></thead>
+            <tbody id="historyBody"><tr class="empty-row"><td colspan="7">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="dialog-backdrop" id="filingDialog" hidden>
+        <form class="dialog" id="filingForm" role="dialog" aria-modal="true" aria-labelledby="filingTitle" novalidate>
+          <h3 id="filingTitle">Record filing</h3>
+          <p id="filingSubtitle"></p>
+          <div class="form-grid">
+            <div class="field"><label for="filingDate" id="dateLabel">Date filed</label><input id="filingDate" type="date" required></div>
+            <div class="field" id="amountField"><label for="filingPaid">Amount paid (J$)</label><input id="filingPaid" type="number" min="0" step="0.01"><small id="amountHint"></small></div>
+            <div class="field wide"><label for="filingRef">Reference or receipt number</label><input id="filingRef" type="text" maxlength="100" autocomplete="off"></div>
+            <div class="field wide"><label for="filingNotes">Notes</label><textarea id="filingNotes" maxlength="500"></textarea></div>
+          </div>
+          <div class="form-message" id="filingMessage" role="alert"></div>
+          <div class="dialog-actions"><button type="button" class="btn" id="filingCancel">Cancel</button><button type="submit" class="btn primary" id="filingSave">Save</button></div>
+        </form>
+      </div>
+
+      <footer class="dashboard-footer">
+        <span>© 2026 Kairox Technologies</span>
+        <span>Version 1.0.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="js/supabase.js"></script>
+  <script src="https://unpkg.com/lucide@1.66.0/dist/umd/lucide.min.js"></script>
+  <script src="js/compliance.js"></script>
+  <script src="js/topbar.js"></script>
+  <script>
+    lucide.createIcons();
+    // The sidebar name card signs you out (js/topbar.js handles the profile menu and notifications).
+    document.addEventListener("click", async (event) => {
+      const card = event.target.closest && event.target.closest("[data-logout]");
+      if (card && window.confirm("Sign out of Kairox Pay?")) {
+        await supabaseClient.auth.signOut();
+        window.location.href = "login.html";
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | Support</title>
+  <link rel="stylesheet" href="css/dashboard-v2.css">
+  <link rel="stylesheet" href="css/app-pages.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">K</div>
+        <div><h1>KAIROX</h1><p>Payroll</p></div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="dashboard-v2.html">
+          <i class="nav-icon" data-lucide="house"></i>
+          <span>Home</span>
+        </a>
+        <a class="nav-item" href="employees-v2.html">
+          <i class="nav-icon" data-lucide="users"></i>
+          <span>Employees</span>
+        </a>
+        <a class="nav-item" href="payroll.html">
+          <i class="nav-icon" data-lucide="circle-dollar-sign"></i>
+          <span>Payroll</span>
+        </a>
+        <a class="nav-item" href="payslips.html">
+          <i class="nav-icon" data-lucide="receipt-text"></i>
+          <span>Payslips</span>
+        </a>
+        <a class="nav-item" href="compliance.html">
+          <i class="nav-icon" data-lucide="shield-check"></i>
+          <span>Compliance</span>
+        </a>
+        <a class="nav-item" href="reports.html">
+          <i class="nav-icon" data-lucide="chart-no-axes-column"></i>
+          <span>Reports</span>
+        </a>
+        <a class="nav-item" href="documents.html">
+          <i class="nav-icon" data-lucide="folder"></i>
+          <span>Documents</span>
+        </a>
+        <a class="nav-item" href="settings.html">
+          <i class="nav-icon" data-lucide="settings"></i>
+          <span>Settings</span>
+        </a>
+        <a class="nav-item active" href="support.html" aria-current="page">
+          <i class="nav-icon" data-lucide="circle-help"></i>
+          <span>Support</span>
+        </a>
+      </nav>
+
+      <a href="dashboard-v2.html" class="sidebar-brand">
+        <img src="assets/images/kairox-pay-logo.png" alt="Kairox Pay" class="sidebar-brand-logo">
+      </a>
+
+      <div class="user-card" data-logout title="Click to sign out" style="cursor:pointer">
+        <div class="user-avatar">?</div>
+        <div class="user-details"><strong>Not signed in</strong><span id="userRoleLabel">&nbsp;</span></div>
+        <span>⌄</span>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <div id="pageBanner" class="page-banner" hidden></div>
+
+      <header class="topbar">
+        <div>
+          <h2>Support</h2>
+          <p>Help with Kairox Pay, and a quick way to contact us.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="notification-button" aria-label="Notifications">♢<span class="notification-count">0</span></button>
+          <div class="topbar-avatar">?</div>
+        </div>
+      </header>
+
+      <div class="two-col">
+        <section class="page-card">
+          <div class="page-card-head"><div><h3>Answers</h3><p>Short answers to the questions people ask most.</p></div></div>
+          <div class="filters"><div class="field"><label for="faqSearch">Search the answers</label><input id="faqSearch" type="search" placeholder="for example: reverse, password, payslip"></div></div>
+          <div id="faqList"></div>
+          <p class="muted small" id="faqEmpty" hidden>No answers match. Try different words, or write to us on the right.</p>
+        </section>
+
+        <section class="page-card">
+          <div class="page-card-head"><div><h3>Contact support</h3><p>Email us and we will reply to the address you write from.</p></div></div>
+          <form id="supportForm" novalidate>
+            <div class="form-grid">
+              <div class="field wide"><label for="supportTopic">What is this about?</label><select id="supportTopic">
+                <option>A question about using Kairox Pay</option><option>Something is not working</option>
+                <option>A payroll figure looks wrong</option><option>A suggestion</option><option>Access or login</option></select></div>
+              <div class="field wide"><label for="supportMessage">Tell us what happened</label><textarea id="supportMessage" placeholder="What did you do, what did you expect, and what happened instead? Please do not include passwords."></textarea></div>
+            </div>
+            <div class="form-message" id="supportMessageNote" role="alert"></div>
+            <div class="row-actions"><button class="btn primary" type="submit">Email support</button><button class="btn" type="button" id="copyDetails">Copy details</button></div>
+          </form>
+          <p class="muted small" style="margin:16px 0 8px"><strong>Added to your email so we can help faster:</strong></p>
+          <pre class="diagnostics" id="diagnostics">Loading…</pre>
+          <p class="muted small">This contains no payroll figures, names or passwords. Support: <a href="mailto:kairoxpay@gmail.com">kairoxpay@gmail.com</a></p>
+        </section>
+      </div>
+
+      <footer class="dashboard-footer">
+        <span>© 2026 Kairox Technologies</span>
+        <span>Version 1.0.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="js/supabase.js"></script>
+  <script src="https://unpkg.com/lucide@1.66.0/dist/umd/lucide.min.js"></script>
+  <script src="js/support.js"></script>
+  <script src="js/topbar.js"></script>
+  <script>
+    lucide.createIcons();
+    // The sidebar name card signs you out (js/topbar.js handles the profile menu and notifications).
+    document.addEventListener("click", async (event) => {
+      const card = event.target.closest && event.target.closest("[data-logout]");
+      if (card && window.confirm("Sign out of Kairox Pay?")) {
+        await supabaseClient.auth.signOut();
+        window.location.href = "login.html";
+      }
+    });
+  </script>
+</body>
+</html>

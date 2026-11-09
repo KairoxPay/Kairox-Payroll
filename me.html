@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | My portal</title>
+  <link rel="stylesheet" href="css/dashboard-v2.css">
+  <link rel="stylesheet" href="css/app-pages.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">K</div>
+        <div><h1>KAIROX</h1><p>Payroll</p></div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="dashboard-v2.html">
+          <i class="nav-icon" data-lucide="house"></i>
+          <span>Home</span>
+        </a>
+        <a class="nav-item" href="employees-v2.html">
+          <i class="nav-icon" data-lucide="users"></i>
+          <span>Employees</span>
+        </a>
+        <a class="nav-item" href="people.html">
+          <i class="nav-icon" data-lucide="users-round"></i>
+          <span>People</span>
+        </a>
+        <a class="nav-item" href="leave.html">
+          <i class="nav-icon" data-lucide="calendar-days"></i>
+          <span>Leave</span>
+        </a>
+        <a class="nav-item" href="leavers.html">
+          <i class="nav-icon" data-lucide="user-minus"></i>
+          <span>Leavers</span>
+        </a>
+        <a class="nav-item" href="payroll.html">
+          <i class="nav-icon" data-lucide="circle-dollar-sign"></i>
+          <span>Payroll</span>
+        </a>
+        <a class="nav-item" href="payslips.html">
+          <i class="nav-icon" data-lucide="receipt-text"></i>
+          <span>Payslips</span>
+        </a>
+        <a class="nav-item" href="compliance.html">
+          <i class="nav-icon" data-lucide="shield-check"></i>
+          <span>Compliance</span>
+        </a>
+        <a class="nav-item" href="reports.html">
+          <i class="nav-icon" data-lucide="chart-no-axes-column"></i>
+          <span>Reports</span>
+        </a>
+        <a class="nav-item" href="documents.html">
+          <i class="nav-icon" data-lucide="folder"></i>
+          <span>Documents</span>
+        </a>
+        <a class="nav-item" href="settings.html">
+          <i class="nav-icon" data-lucide="settings"></i>
+          <span>Settings</span>
+        </a>
+        <a class="nav-item" href="support.html">
+          <i class="nav-icon" data-lucide="circle-help"></i>
+          <span>Support</span>
+        </a>
+      </nav>
+
+      <a href="dashboard-v2.html" class="sidebar-brand">
+        <img src="assets/images/kairox-pay-logo.png" alt="Kairox Pay" class="sidebar-brand-logo">
+      </a>
+
+      <div class="user-card" data-logout title="Click to sign out" style="cursor:pointer">
+        <div class="user-avatar">?</div>
+        <div class="user-details"><strong>Not signed in</strong><span id="userRoleLabel">&nbsp;</span></div>
+        <span>⌄</span>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <div id="pageBanner" class="page-banner" hidden></div>
+
+      <header class="topbar">
+        <div>
+          <h2>My portal</h2>
+          <p>Your payslips, leave, details and documents.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="notification-button" aria-label="Notifications">♢<span class="notification-count">0</span></button>
+          <div class="topbar-avatar">?</div>
+        </div>
+      </header>
+
+      <div id="meMessage" class="form-message" role="status" style="margin:0 0 14px"></div>
+      <div id="meEnded" class="page-banner" hidden></div>
+
+      <section class="page-card" id="meProfileCard">
+        <div class="page-card-head"><div><h3>My details</h3><p>Your record at work. You can update your contact details; the rest is changed by your employer.</p></div></div>
+        <div id="meProfile"></div>
+      </section>
+
+      <section class="page-card" id="mePayslipsCard" hidden>
+        <div class="page-card-head"><div><h3>My payslips</h3><p>Every payslip from your processed payrolls, newest first.</p></div></div>
+        <div class="table-wrap"><table class="data"><thead><tr><th>Pay period</th><th>Pay date</th><th class="num">Gross pay</th><th class="num">Deductions</th><th class="num">Net pay</th><th></th></tr></thead><tbody id="mePayslipsBody"></tbody></table></div>
+      </section>
+
+      <section class="page-card" id="meLeaveCard" hidden>
+        <div class="page-card-head"><div><h3>My leave</h3><p>Your balance for the year, and your requests. A manager or HR officer approves each one.</p></div><div class="row-actions" style="align-items:flex-end"><div class="field" style="min-width:110px"><label for="meLeaveYear">Year</label><select id="meLeaveYear"></select></div><button class="btn primary" id="meRequestLeave" type="button">Request leave</button></div></div>
+        <div class="table-wrap"><table class="data"><thead><tr><th>Leave</th><th class="num">Entitled</th><th class="num">Taken</th><th class="num">Waiting</th><th class="num">Left</th></tr></thead><tbody id="meBalBody"></tbody></table></div>
+        <h3 style="margin:22px 0 8px">My requests</h3>
+        <div class="table-wrap"><table class="data"><thead><tr><th>Leave</th><th>Dates</th><th class="num">Days</th><th>Status</th><th></th></tr></thead><tbody id="meReqBody"></tbody></table></div>
+      </section>
+
+      <section class="page-card" id="meTaxCard" hidden>
+        <div class="page-card-head"><div><h3>My tax and statutory totals</h3><p>What was paid and deducted in the year, from your processed payrolls.</p></div><div class="row-actions" style="align-items:flex-end"><div class="field" style="min-width:110px"><label for="meTaxYear">Year</label><select id="meTaxYear"></select></div><button class="btn" id="meTaxPrint" type="button">Print</button></div></div>
+        <div class="table-wrap"><table class="data"><tbody id="meTaxBody"></tbody></table></div>
+      </section>
+
+      <section class="page-card" id="meDocsCard" hidden>
+        <div class="page-card-head"><div><h3>Company documents</h3><p>Policies and other documents your employer has shared with you.</p></div></div>
+        <div class="table-wrap"><table class="data"><thead><tr><th>Document</th><th>Type</th><th>Added</th><th></th></tr></thead><tbody id="meDocsBody"></tbody></table></div>
+      </section>
+
+      <div class="dialog-backdrop" id="meDialog" hidden>
+        <form class="dialog" id="meDialogForm" role="dialog" aria-modal="true" aria-labelledby="meDialogTitle" novalidate></form>
+      </div>
+
+      <footer class="dashboard-footer">
+        <span>© 2026 Kairox Technologies</span>
+        <span>Version 1.0.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="js/supabase.js"></script>
+  <script src="https://unpkg.com/lucide@1.66.0/dist/umd/lucide.min.js"></script>
+  <script src="js/me.js"></script>
+  <script src="js/topbar.js"></script>
+  <script>
+    lucide.createIcons();
+    // The sidebar name card signs you out (js/topbar.js handles the profile menu and notifications).
+    document.addEventListener("click", async (event) => {
+      const card = event.target.closest && event.target.closest("[data-logout]");
+      if (card && window.confirm("Sign out of Kairox Pay?")) {
+        await supabaseClient.auth.signOut();
+        window.location.href = "login.html";
+      }
+    });
+  </script>
+</body>
+</html>

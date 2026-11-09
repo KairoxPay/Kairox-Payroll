@@ -1,1 +1,1 @@
--- Kairox Payroll sample data
+-- Kairox Pay sample data

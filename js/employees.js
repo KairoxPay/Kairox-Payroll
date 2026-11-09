@@ -1,11 +1,139 @@
-const EMPLOYEE_WORKSPACE = "kairox-exchange";
+// Pages that forgot the <script src="js/topbar.js"> line still get the Company box, the sidebar links and the
+// shared pay period: this loads it for them (once), and waits for it.
+function kairoxEnsureTopbar() {
+  if (window.KairoxCompany) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    try {
+      if (/jsdom/i.test(navigator.userAgent) || !document.head) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = "js/topbar.js";
+      script.onload = () => resolve();
+      script.onerror = () => resolve();
+      document.head.appendChild(script);
+      setTimeout(resolve, 4000);
+    } catch (error) {
+      resolve();
+    }
+  });
+}
+
+// Which company the signed-in person is working in (chosen with the company switcher). Kairox Exchange by default.
+function kairoxWorkspaceId() {
+  try {
+    return localStorage.getItem("kairoxWorkspace") || "kairox-exchange";
+  } catch (error) {
+    return "kairox-exchange";
+  }
+}
+
+function escapeEmployeeHtml(value = "") {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+async function getEmployeeActor() {
+  const { data } = await supabaseClient.auth.getUser();
+  return data?.user?.email || "Unknown user";
+}
+
+const EMPLOYEE_WORKSPACE = kairoxWorkspaceId();
 
 let employeeDirectoryData = [];
+let employeeRole = null;
+
+function canEditEmployees() {
+  return employeeRole === "admin" || employeeRole === "director" || employeeRole === "payroll";
+}
+
+function showEmployeeBanner(html) {
+  let banner = document.getElementById("employeeAccessBanner");
+
+  if (!banner) {
+    banner = document.createElement("div");
+    banner.id = "employeeAccessBanner";
+    banner.style.cssText =
+      "margin:0 0 18px;padding:14px 18px;border-radius:12px;background:#fff4e5;border:1px solid #f6d9a6;color:#8a4b00;font-weight:700;";
+
+    const host = document.querySelector(".employees-main") || document.body;
+    host.insertBefore(banner, host.firstChild);
+  }
+
+  banner.innerHTML = html;
+  banner.hidden = !html;
+}
+
+async function loadEmployeeAccess() {
+  const { data: sessionData } = await supabaseClient.auth.getSession();
+
+  if (!sessionData || !sessionData.session) {
+    showEmployeeBanner(
+      'You are not signed in. <a href="login.html?next=employees-v2.html">Sign in</a> to continue.'
+    );
+    return false;
+  }
+
+  const { data: role, error } = await supabaseClient.rpc("get_my_role", { p_workspace: kairoxWorkspaceId() });
+
+  if (error) {
+    showEmployeeBanner(
+      "The payroll security update has not been applied yet. Run phase2-migration.sql in Supabase, then refresh."
+    );
+    return false;
+  }
+
+  if (!role) {
+    showEmployeeBanner(
+      "Your account does not have a payroll role yet. Ask an admin to give you access."
+    );
+    return false;
+  }
+
+  employeeRole = role;
+  showEmployeeBanner("");
+  return true;
+}
+
+// Viewers can look but not change: hide the controls that would only be refused.
+function applyEmployeeRoleUi() {
+  if (canEditEmployees()) {
+    return;
+  }
+
+  document
+    .querySelectorAll('a[href="edit-employee.html"], button[data-add-employee]')
+    .forEach((control) => {
+      control.hidden = true;
+    });
+}
 
 async function loadEmployeeDirectory() {
   const tableBody = document.getElementById("employeeTableBody");
 
   if (!tableBody) {
+    return;
+  }
+
+  if (!(await loadEmployeeAccess())) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="5">
+          <div class="table-message">
+            Employee records are not available until you are signed in with a payroll role.
+          </div>
+        </td>
+      </tr>
+    `;
     return;
   }
 
@@ -36,6 +164,7 @@ async function loadEmployeeDirectory() {
   renderEmployeeDirectory(employeeDirectoryData);
   updateEmployeeSummary(employeeDirectoryData);
   populateDepartmentFilter(employeeDirectoryData);
+  applyEmployeeRoleUi();
 }
 
 function renderEmployeeDirectory(employeeList) {
@@ -78,7 +207,7 @@ function renderEmployeeDirectory(employeeList) {
           <img
             class="employee-avatar"
             src="${employee.photo_url}"
-            alt="${employee.name}"
+            alt="${escapeEmployeeHtml(employee.name || "")}"
           >
         `
         : `
@@ -94,13 +223,13 @@ function renderEmployeeDirectory(employeeList) {
               ${photoMarkup}
 
               <div>
-                <strong>${employee.name || "Unnamed employee"}</strong>
-                <span>${employee.title || "No job title"}</span>
+                <strong>${escapeEmployeeHtml(employee.name || "Unnamed employee")}</strong>
+                <span>${escapeEmployeeHtml(employee.title || "No job title")}</span>
               </div>
             </div>
           </td>
 
-          <td>${employee.department || "—"}</td>
+          <td>${escapeEmployeeHtml(employee.department || "—")}</td>
 
           
           <td>JMD ${formattedSalary}</td>
@@ -120,6 +249,10 @@ function renderEmployeeDirectory(employeeList) {
                 View
               </a>
 
+${
+  !canEditEmployees()
+    ? ""
+    : `
               <a
   class="action-button"
   href="edit-employee.html?id=${employee.id}"
@@ -137,6 +270,19 @@ ${
       >
         Restore
       </button>
+      ${
+        employeeRole === "admin"
+          ? `<button
+        class="delete-button"
+        type="button"
+        data-id="${employee.id}"
+        data-name="${escapeEmployeeHtml(employee.name)}"
+        style="margin-left:6px;padding:8px 12px;border:1px solid #f0c4c4;border-radius:10px;background:#fff;color:#b91c1c;font:inherit;font-size:13px;font-weight:700;cursor:pointer"
+      >
+        Delete
+      </button>`
+          : ""
+      }
     `
     : `
       <button
@@ -147,10 +293,8 @@ ${
         Archive
       </button>
     `
+}`
 }
-  Archive
-</button>
-              </button>
             </div>
           </td>
         </tr>
@@ -166,7 +310,8 @@ function updateEmployeeSummary(employeeList) {
     const status =
       normaliseStatus(employee.employment_status);
 
-    if (status === "archived") {
+    // Archived and inactive people are not paid, so they are not in the monthly payroll figure.
+    if (status === "archived" || status === "inactive") {
       return sum;
     }
 
@@ -369,7 +514,7 @@ async function archiveEmployee(employeeId) {
   await loadEmployeeDirectory();
   const { data: employee } = await supabaseClient
   .from("employees")
-  .select("first_name,last_name")
+  .select("name")
   .eq("id", employeeId)
   .single();
 
@@ -381,9 +526,9 @@ await supabaseClient
     activity_type: "archive",
     activity_title: "Employee archived",
     activity_description: employee
-      ? `${employee.first_name} ${employee.last_name} was archived.`
+      ? `${employee.name} was archived.`
       : "Employee archived.",
-    created_by: "HR"
+    created_by: await getEmployeeActor()
   });
 
   KairoxUI.success(
@@ -441,7 +586,7 @@ await supabaseClient
     activity_description: employee
       ? `${employee.name} was restored to active status.`
       : "Employee restored to active status.",
-    created_by: "HR"
+    created_by: await getEmployeeActor()
   });
 
   KairoxUI.success(
@@ -449,7 +594,59 @@ await supabaseClient
     "Employee Restored"
   );
 }
+// Permanently removes an archived employee who has no payroll history (a duplicate or a mistake).
+// The database refuses anyone else, and says why.
+async function deleteEmployee(employeeId, name) {
+  const message =
+    `Permanently delete ${name || "this employee"}? This removes their record, notes and recurring pay items and cannot be undone. ` +
+    "It is for duplicates and mistakes: anyone who appears in a draft, approved or processed payroll cannot be deleted.";
+
+  const confirmed =
+    window.KairoxUI && typeof KairoxUI.confirm === "function"
+      ? await KairoxUI.confirm({
+          title: "Delete Employee",
+          message,
+          confirmText: "Delete permanently",
+          cancelText: "Cancel"
+        })
+      : window.confirm(message);
+
+  if (!confirmed) {
+    return;
+  }
+
+  const { error } = await supabaseClient.rpc("delete_employee", { p_id: employeeId });
+
+  if (error) {
+    console.error("Could not delete employee:", error);
+
+    const text = error.message || "The employee could not be deleted.";
+
+    if (window.KairoxUI && typeof KairoxUI.error === "function") {
+      KairoxUI.error(text);
+    } else {
+      window.alert(text);
+    }
+
+    return;
+  }
+
+  await loadEmployeeDirectory();
+
+  if (window.KairoxUI && typeof KairoxUI.success === "function") {
+    KairoxUI.success("The employee was deleted.", "Employee Deleted");
+  }
+}
+
 document.addEventListener("click", (event) => {
+  const deleteButton =
+    event.target.closest(".delete-button");
+
+  if (deleteButton) {
+    deleteEmployee(deleteButton.dataset.id, deleteButton.dataset.name);
+    return;
+  }
+
   const archiveButton =
     event.target.closest(".archive-button");
 
@@ -467,3 +664,5 @@ document.addEventListener("click", (event) => {
   }
 });
 loadEmployeeDirectory();
+
+kairoxEnsureTopbar();
