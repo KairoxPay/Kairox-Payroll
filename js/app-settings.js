@@ -528,6 +528,11 @@ async function startSettingsPage() {
 
     document.getElementById("portalCard").hidden = false;
     await loadPortalSettings();
+
+    if (typeof loadEmailAlerts === "function") {
+      document.getElementById("emailCard").hidden = false;
+      await loadEmailAlerts();
+    }
   }
 }
 

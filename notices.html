@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | Email payslips</title>
+  <link rel="stylesheet" href="css/dashboard-v2.css">
+  <link rel="stylesheet" href="css/app-pages.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <!-- This is replaced by the standard sidebar from js/topbar.js. These few links only show if that script cannot load. -->
+      <div class="brand"><div class="brand-mark">K</div><div><h1>KAIROX</h1><p>Payroll</p></div></div>
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="dashboard-v2.html"><span>Home</span></a>
+        <a class="nav-item" href="payroll.html"><span>Payroll</span></a>
+        <a class="nav-item" href="payslips.html"><span>Payslips</span></a>
+        <a class="nav-item active" href="notices.html" aria-current="page"><span>Email payslips</span></a>
+        <a class="nav-item" href="settings.html"><span>Settings</span></a>
+      </nav>
+    </aside>
+
+    <main class="dashboard-main">
+      <div id="pageBanner" class="page-banner" hidden></div>
+
+      <header class="topbar">
+        <div>
+          <h2>Email payslips</h2>
+          <p>Tell your team their payslips are ready. No pay figures are ever put in the email.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="notification-button" aria-label="Notifications">♢<span class="notification-count">0</span></button>
+          <div class="topbar-avatar">?</div>
+        </div>
+      </header>
+
+      <div id="noticeMessage" class="form-message" role="status" style="margin:0 0 14px"></div>
+
+      <section class="page-card" id="noticesCard">
+        <div class="page-card-head">
+          <div>
+            <h3>Processed payrolls</h3>
+            <p>Pick a payroll to prepare its "your payslip is ready" email.</p>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Pay period</th><th>Pay date</th><th class="num">Employees</th><th>Notice</th><th></th></tr></thead>
+            <tbody id="noticeBody"><tr class="empty-row"><td colspan="5">Loading…</td></tr></tbody>
+          </table>
+        </div>
+        <p class="note"><strong>How it works:</strong> 1. Process the payroll. 2. Click <strong>Prepare email</strong>: it shows who will get it. 3. Click <strong>Open in Gmail</strong>: your email opens with the message written and everyone's address already in BCC. Press <strong>Send</strong>. 4. Come back and click <strong>I've sent it</strong>, so everyone can see it was done. Only employees who can sign in to <strong>My portal</strong> are included, because they are the only ones who can open a payslip. Their email is the one they sign in with.</p>
+      </section>
+
+      <div class="dialog-backdrop" id="ntDialog" hidden>
+        <div class="dialog" id="ntDialogBox" role="dialog" aria-modal="true" aria-labelledby="ntDialogTitle" style="width:min(680px,100%)"></div>
+      </div>
+
+      <footer class="dashboard-footer">
+        <span>© 2026 Kairox Technologies</span>
+        <span>Version 1.0.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/notices.js"></script>
+  <script src="js/topbar.js"></script>
+</body>
+</html>
