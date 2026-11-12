@@ -200,7 +200,7 @@ function cpRenderS01() {
           <td class="num"><strong>${cpMoney(m.total)}</strong>${differs ? `<small>Paid ${cpMoney(record.amount_paid)}</small>` : ""}</td>
           <td>${cpEsc(cpLong(due))}</td>
           <td><span class="badge ${status.css}">${cpEsc(status.text)}</span></td>
-          <td>${cpActions("S01", m.key)}</td>
+          <td><div class="row-actions"><button type="button" class="btn small" data-s01="${cpEsc(m.key)}">Schedule</button>${cpActions("S01", m.key)}</div></td>
         </tr>`;
     })
     .join("");

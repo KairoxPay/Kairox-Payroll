@@ -168,6 +168,10 @@
         </form>
       </div>
 
+      <div class="dialog-backdrop" id="s01Dialog" hidden>
+        <div class="dialog" id="s01Box" role="dialog" aria-modal="true" aria-labelledby="s01Title" style="width:min(1180px,100%)"></div>
+      </div>
+
       <footer class="dashboard-footer">
         <span>© 2026 Kairox Technologies</span>
         <span>Version 1.0.0</span>
@@ -178,7 +182,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
   <script src="js/supabase.js"></script>
   <script src="https://unpkg.com/lucide@1.66.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="js/compliance.js"></script>
+  <script src="js/s01-schedule.js"></script>
   <script src="js/topbar.js"></script>
   <script>
     lucide.createIcons();

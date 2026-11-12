@@ -202,17 +202,20 @@ function renderEmployeeDirectory(employeeList) {
         maximumFractionDigits: 2
       });
 
-      const photoMarkup = employee.photo_url
+      // Only a normal web address is allowed as a photo, and it is escaped: nothing typed into a record can break out of the page.
+      const safePhoto = /^https?:\/\//i.test(String(employee.photo_url || "")) ? escapeEmployeeHtml(employee.photo_url) : "";
+
+      const photoMarkup = safePhoto
         ? `
           <img
             class="employee-avatar"
-            src="${employee.photo_url}"
+            src="${safePhoto}"
             alt="${escapeEmployeeHtml(employee.name || "")}"
           >
         `
         : `
           <div class="employee-avatar employee-avatar-fallback">
-            ${initials}
+            ${escapeEmployeeHtml(initials)}
           </div>
         `;
 

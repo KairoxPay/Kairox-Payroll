@@ -171,12 +171,34 @@
           </div>
         </div>
       </section>
+
+      <section class="payroll-table-card settings-section" id="emailCard" hidden>
+        <div class="payroll-table-heading">
+          <div>
+            <h2>Email alerts</h2>
+            <p>Get an email when something needs your attention. Emails are sent from your Gmail by a small Google script you set up once (see the guide).</p>
+          </div>
+        </div>
+        <div class="settings-body">
+          <p class="settings-intro" id="emailStatus">Checking…</p>
+          <label class="settings-check"><input type="checkbox" id="emailLeave"> Email approvers when someone requests leave (the employee's manager and your HR officers; if there is neither, the managing directors and admins)</label><br>
+          <label class="settings-check" style="margin-left:26px"><input type="checkbox" id="emailLeaveType"> Say what type of leave it is (for example Sick leave), so the approver can decide. The reason is never included.</label><br>
+          <label class="settings-check" style="margin-left:26px"><input type="checkbox" id="emailDirectors"> Always email the managing directors as well</label>
+          <div class="settings-actions" style="margin-top:16px">
+            <button id="saveEmailButton" class="settings-button" type="button">Save</button>
+            <button id="testEmailButton" class="settings-button" type="button">Send me a test email</button>
+            <span id="emailMeta" class="settings-meta"></span>
+          </div>
+          <div id="emailLog" style="margin-top:18px"></div>
+        </div>
+      </section>
     </main>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
   <script src="js/supabase.js"></script>
   <script src="js/topbar.js"></script>
+  <script src="js/email-alerts.js"></script>
   <script src="js/app-settings.js"></script>
 </body>
 </html>
