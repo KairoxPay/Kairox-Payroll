@@ -19,7 +19,13 @@ function emResult(row) {
   if (/not allowed/.test(reply)) return { text: "Refused: the secret does not match the script's SECRET", css: "late" };
   if (/not configured/.test(reply)) return { text: "Refused: the script has no SECRET yet", css: "late" };
   if (/daily limit/.test(reply)) return { text: "Not sent: the daily limit was reached", css: "warn" };
-  if (row.http_status === null || row.http_status === undefined) return { text: "Waiting for an answer", css: "info" };
+  if (row.http_status === null || row.http_status === undefined) {
+    // Supabase only keeps Google's answer for a few hours, so an older email with no answer is not a problem, just an expired record
+    const hours = (Date.now() - new Date(row.created_at).getTime()) / 3600000;
+    return hours > 6
+      ? { text: "Handed to the mail service (Google's answer is only kept for a few hours)", css: "info" }
+      : { text: "Waiting for an answer", css: "info" };
+  }
   if (row.http_status >= 400) return { text: `The script address answered with error ${row.http_status}`, css: "late" };
   return { text: "Handed to the mail service", css: "info" };
 }

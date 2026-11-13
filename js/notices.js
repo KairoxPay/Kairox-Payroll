@@ -17,6 +17,7 @@ const NT_MAX_LINK = 7000;   // the longest compose link we will try to open; bey
 
 let ntRuns = [];
 let ntCurrent = null;       // the notice being prepared in the dialog
+let ntAutoReady = false;    // true when the database can send the emails itself (the email set-up is finished)
 
 const ntEl = (id) => document.getElementById(id);
 const ntEsc = (value = "") =>
@@ -84,6 +85,14 @@ function ntComposeLinks({ bcc, subject, body, from }) {
   return { gmail, mailto, tooLong: Math.max(gmail.length, mailto.length) > NT_MAX_LINK };
 }
 
+// The extra line is only allowed in automatic emails if it is short and has no links or addresses (the database enforces this too).
+function ntExtraProblem(text) {
+  const t = String(text || "").trim();
+  if (t.length > 200) return "The extra line is too long: 200 characters at most.";
+  if (/(https?:|www\.|:\/\/|@)/i.test(t)) return "For automatic emails the extra line cannot contain web links or email addresses.";
+  return "";
+}
+
 // Hands a link to the browser. Kept in one place so the page can be tested without leaving it.
 function ntOpen(url, newTab) {
   if (newTab) window.open(url, "_blank", "noopener");
@@ -137,6 +146,11 @@ async function ntAccess() {
 
   ntBanner("");
   return true;
+}
+
+async function ntCheckSender() {
+  const { data, error } = await supabaseClient.rpc("payslip_notice_sender_ready", { p_workspace: NT_WORKSPACE });
+  return !error && data === true;
 }
 
 async function ntLoad() {
@@ -254,7 +268,7 @@ function ntRenderDialog() {
   const sentBefore = Number(c.run.notices) > 0;
 
   const recipients = emails.length
-    ? `<p style="margin:0 0 6px"><strong>${emails.length} ${emails.length === 1 ? "employee" : "employees"}</strong> will get this email. Their addresses go in BCC, so nobody sees anyone else's.</p>
+    ? `<p style="margin:0 0 6px"><strong>${emails.length} ${emails.length === 1 ? "employee" : "employees"}</strong> will get this email. ${ntAutoReady ? "Each gets their own copy," : "Their addresses go in BCC,"} so nobody sees anyone else's address.</p>
        <ul style="margin:0 0 12px;padding-left:20px;font-size:14px">${c.sendable.map((r) => `<li>${ntEsc(r.employee_name)} <span class="muted">(${ntEsc(r.login_email)})</span></li>`).join("")}</ul>`
     : '<div class="note" style="margin:0 0 12px">Nobody in this payroll can sign in to My portal yet, so there is nobody to email. Give people access under <strong>Team &amp; access</strong> first.</div>';
 
@@ -275,13 +289,16 @@ function ntRenderDialog() {
         <input id="ntFrom" type="email" autocomplete="off" placeholder="for example kairoxpay@gmail.com" value="${ntEsc(c.from)}">
         <small>So Gmail opens the right account. Leave it blank to use the one you are already signed in to.</small></div>
       <div class="field"><label for="ntExtra">Add a line to the message (optional)</label>
-        <textarea id="ntExtra" maxlength="300" rows="3" placeholder="for example: Payday is Friday.">${ntEsc(c.extra)}</textarea></div>
+        <textarea id="ntExtra" maxlength="200" rows="3" placeholder="for example: Payday is Friday.">${ntEsc(c.extra)}</textarea>
+        <div id="ntExtraWarn" class="form-message error" style="min-height:0"></div></div>
     </div>
     <div class="muted small" style="margin:0 0 4px">What they will receive:</div>
     <div class="note" id="ntPreview" style="margin:0 0 12px;white-space:pre-wrap"></div>
     <div id="ntTooLong" class="note" style="margin:0 0 12px;display:none"></div>
+    ${ntAutoReady ? `<div class="row-actions" style="margin-bottom:10px"><button type="button" class="btn primary" data-nt="send">Send emails now</button></div>
+    <div class="muted small" style="margin:0 0 4px">Or send it yourself:</div>` : ""}
     <div class="row-actions" style="margin-bottom:6px">
-      <button type="button" class="btn primary" data-nt="gmail">Open in Gmail</button>
+      <button type="button" class="btn ${ntAutoReady ? "" : "primary"}" data-nt="gmail">Open in Gmail</button>
       <button type="button" class="btn" data-nt="mailto">Open in my mail app</button>
       <button type="button" class="btn" data-nt="copyto">Copy addresses</button>
       <button type="button" class="btn" data-nt="copymsg">Copy message</button>
@@ -289,7 +306,7 @@ function ntRenderDialog() {
     <div id="ntDialogMsg" class="form-message" role="status"></div>
     <div class="dialog-actions">
       <button type="button" class="btn" data-nt="close">Close</button>
-      <button type="button" class="btn primary" data-nt="record">I've sent it</button>
+      <button type="button" class="btn ${ntAutoReady ? "" : "primary"}" data-nt="record">${ntAutoReady ? "I sent it myself" : "I've sent it"}</button>
     </div>`;
 
   ntEl("ntDialog").hidden = false;
@@ -319,6 +336,11 @@ function ntRefreshPreview() {
   set("copyto", !emails.length);
   set("copymsg", !emails.length);
   set("record", !emails.length || ntCurrent.saving);
+
+  const problem = ntExtraProblem(ntCurrent.extra);
+  const warn = ntEl("ntExtraWarn");
+  if (warn) warn.textContent = ntAutoReady ? problem : "";
+  set("send", !emails.length || ntCurrent.saving || !!problem);
 
   ntCurrent.links = links;
   ntCurrent.emails = emails;
@@ -357,12 +379,52 @@ async function ntRecord() {
   await ntRefresh();
 }
 
+// The database sends the emails itself, through your Google script. It records them too, so there is no "I've sent it" step.
+async function ntSendNow() {
+  const c = ntCurrent;
+  if (!c || c.saving || !c.emails.length || ntExtraProblem(c.extra)) return;
+
+  const n = c.emails.length;
+  const again = Number(c.run.notices) > 0;
+  const question = `Send the payslip-ready email to ${n} ${n === 1 ? "employee" : "employees"} now?` +
+    (again ? "\n\nA notice for this payroll was already recorded, so this will send another." : "");
+
+  if (!window.confirm(question)) return;
+
+  c.saving = true;
+  ntRefreshPreview();
+  ntDialogMessage("Sending…", "");
+
+  const { data, error } = await supabaseClient.rpc("send_payslip_notices", {
+    p_workspace: NT_WORKSPACE, p_run: c.run.run_id, p_extra: c.extra.trim(), p_again: again
+  });
+
+  if (error) {
+    c.saving = false;
+    ntRefreshPreview();
+    ntDialogMessage(error.message || "The emails could not be sent.", "error");
+    return;
+  }
+
+  const queued = Number(data && data.queued) || 0;
+  const failed = Number(data && data.failed) || 0;
+  const label = c.label;
+
+  ntCloseDialog();
+  ntMessage(failed
+    ? `${queued} ${queued === 1 ? "email was" : "emails were"} sent for ${label}, but ${failed} could not be sent. Check Settings, Email alerts, then use Email again, or open Gmail for the rest.`
+    : `Sent: the notice for ${label} went to ${queued} ${queued === 1 ? "employee" : "employees"}. It can take a minute to arrive, and it is recorded below.`,
+    failed ? "error" : "ok");
+  await ntRefresh();
+}
+
 async function ntDialogAction(name) {
   const c = ntCurrent;
   if (!c) return;
 
   if (name === "close") return ntCloseDialog();
   if (name === "record") return ntRecord();
+  if (name === "send") return ntSendNow();
 
   if (name === "gmail") {
     c.used = true;
@@ -415,6 +477,7 @@ async function ntStart() {
     return;
   }
 
+  ntAutoReady = await ntCheckSender();
   await ntRefresh();
 }
 
