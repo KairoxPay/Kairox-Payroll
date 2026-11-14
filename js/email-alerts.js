@@ -30,7 +30,7 @@ function emResult(row) {
   return { text: "Handed to the mail service", css: "info" };
 }
 
-const emKinds = { leave_request: "Leave request", test: "Test email" };
+const emKinds = { leave_request: "Leave request", leave_decision: "Leave decision", test: "Test email" };
 
 function emRenderLog(rows) {
   const box = emEl("emailLog");
@@ -50,16 +50,17 @@ function emRenderLog(rows) {
 }
 
 async function loadEmailAlerts() {
-  const [status, log] = await Promise.all([
+  const [status, log, decisions] = await Promise.all([
     supabaseClient.rpc("email_alert_status", { p_workspace: SETTINGS_WORKSPACE }),
-    supabaseClient.rpc("email_alert_log", { p_workspace: SETTINGS_WORKSPACE })
+    supabaseClient.rpc("email_alert_log", { p_workspace: SETTINGS_WORKSPACE }),
+    supabaseClient.rpc("leave_decision_emails_status", { p_workspace: SETTINGS_WORKSPACE })
   ]);
 
   const line = emEl("emailStatus");
 
   if (status.error) {
     line.textContent = "Email alerts are not set up yet. Run phase16-email-alerts.sql in Supabase, then refresh.";
-    ["emailLeave", "emailLeaveType", "emailDirectors", "saveEmailButton"].forEach((id) => { emEl(id).disabled = true; });
+    ["emailLeave", "emailLeaveType", "emailDirectors", "emailDecisions", "saveEmailButton"].forEach((id) => { emEl(id).disabled = true; });
     emEl("testEmailButton").disabled = true;
     emEl("emailLog").innerHTML = "";
     return;
@@ -78,6 +79,8 @@ async function loadEmailAlerts() {
   emEl("emailLeave").checked = !!s.leave_requests;
   emEl("emailLeaveType").checked = s.include_leave_type !== false;   // included unless an admin switched it off
   emEl("emailDirectors").checked = !!s.notify_directors;
+  emEl("emailDecisions").checked = !decisions.error && decisions.data === true;
+  emEl("emailDecisions").disabled = !!decisions.error;   // phase20-leave-decision-emails.sql not run yet
   emEl("testEmailButton").disabled = !ready;
   emEl("emailMeta").textContent = s.updated_by ? `Last changed by ${s.updated_by}.` : "Off until you switch it on.";
   emRenderLog(log.error ? [] : log.data || []);
@@ -94,6 +97,14 @@ async function saveEmailAlerts() {
   if (error) {
     setSettingsMessage(error.message || "Email alert settings were not saved.", "error");
     return;
+  }
+
+  if (!emEl("emailDecisions").disabled) {
+    const second = await supabaseClient.rpc("set_leave_decision_emails", { p_workspace: SETTINGS_WORKSPACE, p_on: emEl("emailDecisions").checked });
+    if (second.error) {
+      setSettingsMessage(second.error.message || "The leave decision setting was not saved.", "error");
+      return;
+    }
   }
 
   setSettingsMessage("Email alert settings saved.", "ok");
