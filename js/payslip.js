@@ -86,25 +86,25 @@ function addPayslipExtraRows(item) {
 
   const n = (value) => Number(value || 0);
 
-  const row = (label, value) => `
-    <div class="payslip-row payslip-extra-row">
+  const row = (label, value, key) => `
+    <div class="payslip-row payslip-extra-row" data-ytd-key="${key}">
       <span>${label}</span>
       <strong>${formatPayslipCurrency(value)}</strong>
     </div>
   `;
 
   const earnings = [
-    ["Overtime", item.overtime],
-    ["Bonus", item.bonus],
-    ["Taxable allowances", item.taxable_allowance],
-    ["Adjustment", item.adjustment],
-    ["Non-taxable allowances", item.exempt_allowance]
+    ["Overtime", item.overtime, "overtime"],
+    ["Bonus", item.bonus, "bonus"],
+    ["Taxable allowances", item.taxable_allowance, "taxable_allowance"],
+    ["Adjustment", item.adjustment, "adjustment"],
+    ["Non-taxable allowances", item.exempt_allowance, "exempt_allowance"]
   ].filter(([, value]) => n(value) !== 0);
 
   const deductions = [
-    ["Pension", item.pension],
-    ["Loan repayment", item.loan_deduction],
-    ["Other deductions", item.other_deductions]
+    ["Pension", item.pension, "pension"],
+    ["Loan repayment", item.loan_deduction, "loan_deduction"],
+    ["Other deductions", item.other_deductions, "other_deductions"]
   ].filter(([, value]) => n(value) !== 0);
 
   const earningsAnchor = document
@@ -118,14 +118,14 @@ function addPayslipExtraRows(item) {
   if (earningsAnchor && earnings.length) {
     earningsAnchor.insertAdjacentHTML(
       "afterend",
-      earnings.map(([label, value]) => row(label, value)).join("")
+      earnings.map(([label, value, key]) => row(label, value, key)).join("")
     );
   }
 
   if (deductionAnchor && deductions.length) {
     deductionAnchor.insertAdjacentHTML(
       "afterend",
-      deductions.map(([label, value]) => row(label, value)).join("")
+      deductions.map(([label, value, key]) => row(label, value, key)).join("")
     );
   }
 
@@ -137,20 +137,26 @@ function addPayslipExtraRows(item) {
 }
 
 /* =====================================================
-   YEAR TO DATE
+   YEAR TO DATE (a second column beside "This period")
    Totals for this employee across the calendar year of this payslip's pay date: every PROCESSED payroll paid on or
    before it, plus this payslip itself (so a draft still shows what the year will be once it is processed).
 ===================================================== */
-const PAYSLIP_YTD_FIELDS = [
-  ["Gross pay", "gross_pay"], ["PAYE", "paye"], ["NIS", "nis"], ["NHT", "nht"],
-  ["Education Tax", "education_tax"], ["Pension", "pension"], ["Net pay", "net_pay"]
-];
+const PAYSLIP_YTD_KEYS = ["gross_pay", "basic_salary", "overtime", "bonus", "taxable_allowance", "adjustment", "exempt_allowance",
+  "paye", "nis", "nht", "education_tax", "pension", "loan_deduction", "other_deductions", "total_deductions", "net_pay"];
+
+// Which on-screen value shows which total.
+const PAYSLIP_YTD_IDS = {
+  payslipGrossPay: (t) => t.gross_pay, payslipBasicSalary: (t) => t.basic_salary,
+  payslipTotalEarnings: (t) => t.gross_pay + t.exempt_allowance,
+  payslipPaye: (t) => t.paye, payslipNis: (t) => t.nis, payslipNht: (t) => t.nht, payslipEducationTax: (t) => t.education_tax,
+  payslipDeductionTotal: (t) => t.total_deductions, payslipNetPay: (t) => t.net_pay
+};
 
 function payslipRunDate(run) {
   return String(run.pay_date || run.period_end || "").slice(0, 10);
 }
 
-// Pure: which runs count, and the totals. Exported for tests.
+// Pure: which runs count, and the totals.
 function payslipYtdTotals(thisRun, thisItem, runs, items) {
   const date = payslipRunDate(thisRun);
   const year = date.slice(0, 4);
@@ -161,33 +167,57 @@ function payslipYtdTotals(thisRun, thisItem, runs, items) {
   );
   const lines = (items || []).filter((i) => counted.has(i.payroll_run_id)).concat([thisItem]);
   const totals = {};
-  PAYSLIP_YTD_FIELDS.forEach(([, key]) => {
+  PAYSLIP_YTD_KEYS.forEach((key) => {
     totals[key] = Math.round(lines.reduce((t, i) => t + Number(i[key] || 0), 0) * 100) / 100;
   });
   return { year, payslips: lines.length, totals };
 }
 
+const PAYSLIP_YTD_STYLE = `
+  .payslip-has-ytd .payslip-section .payslip-row { display:grid; grid-template-columns:minmax(0,1fr) minmax(96px,150px) minmax(96px,150px); gap:12px; align-items:baseline; }
+  .payslip-has-ytd .payslip-section .payslip-row > strong { text-align:right; }
+  .payslip-has-ytd .payslip-ytd-val { color:#6f7285; font-weight:600; }
+  .payslip-has-ytd .total-row .payslip-ytd-val { color:inherit; font-weight:800; }
+  .payslip-ytd-head { display:grid; grid-template-columns:minmax(0,1fr) minmax(96px,150px) minmax(96px,150px); gap:12px;
+    font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:#6f7285; margin:0 0 4px; }
+  .payslip-ytd-head span { text-align:right; }
+  .payslip-has-ytd .payslip-net-pay { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(96px,150px); gap:12px; align-items:baseline; }
+  .payslip-has-ytd .payslip-net-pay .payslip-ytd-val { text-align:right; font-size:16px; }
+  .payslip-ytd-note { margin:4px 0 0; font-size:12px; color:#6f7285; text-align:right; }
+  @media (max-width:560px){ .payslip-has-ytd .payslip-section .payslip-row, .payslip-ytd-head { grid-template-columns:minmax(0,1fr) 88px 88px; gap:8px; font-size:13px; } }`;
+
 function renderPayslipYtd(ytd) {
-  document.querySelectorAll(".payslip-ytd").forEach((el) => el.remove());
-  const anchor = document.querySelector(".payslip-net-pay");
-  if (!anchor || !ytd) return;
+  document.querySelectorAll(".payslip-ytd-val, .payslip-ytd-head, .payslip-ytd-note").forEach((el) => el.remove());
+  if (!ytd) return;
 
-  const rows = PAYSLIP_YTD_FIELDS
-    .filter(([label, key]) => key !== "pension" || ytd.totals.pension)
-    .map(([label, key]) => `
-      <div class="payslip-row${key === "net_pay" ? " total-row" : ""}">
-        <span>${label}</span>
-        <strong>${formatPayslipCurrency(ytd.totals[key])}</strong>
-      </div>`).join("");
+  if (!document.getElementById("payslipYtdStyle")) {
+    const style = document.createElement("style");
+    style.id = "payslipYtdStyle";
+    style.textContent = PAYSLIP_YTD_STYLE;
+    document.head.appendChild(style);
+  }
+  document.body.classList.add("payslip-has-ytd");
 
-  anchor.insertAdjacentHTML("afterend", `
-    <section class="payslip-section payslip-ytd" style="margin-top:22px">
-      <h4>Year to date (${ytd.year})</h4>
-      ${rows}
-      <p class="payslip-ytd-note" style="margin:6px 0 0;font-size:12px;color:#6f7285">
-        ${ytd.payslips} ${ytd.payslips === 1 ? "payslip" : "payslips"} paid in ${ytd.year}, up to and including this one.
-      </p>
-    </section>`);
+  const addValue = (strong, value) => {
+    if (!strong || value == null) return;
+    const cell = document.createElement("strong");
+    cell.className = "payslip-ytd-val";
+    cell.textContent = formatPayslipCurrency(value);
+    strong.insertAdjacentElement("afterend", cell);
+  };
+
+  Object.entries(PAYSLIP_YTD_IDS).forEach(([id, pick]) => addValue(document.getElementById(id), pick(ytd.totals)));
+  document.querySelectorAll(".payslip-extra-row[data-ytd-key]").forEach((row) =>
+    addValue(row.querySelector("strong"), ytd.totals[row.dataset.ytdKey]));
+
+  document.querySelectorAll(".payslip-section").forEach((section) => {
+    const heading = section.querySelector("h4");
+    if (heading) heading.insertAdjacentHTML("afterend", `<div class="payslip-ytd-head"><span></span><span>This period</span><span>Year to date ${ytd.year}</span></div>`);
+  });
+
+  const net = document.querySelector(".payslip-net-pay");
+  if (net) net.insertAdjacentHTML("afterend",
+    `<p class="payslip-ytd-note">Year to date: ${ytd.payslips} ${ytd.payslips === 1 ? "payslip" : "payslips"} paid in ${ytd.year}, up to and including this one.</p>`);
 }
 
 async function loadPayslipYtd(run, item) {
@@ -209,7 +239,7 @@ async function loadPayslipYtd(run, item) {
     if (ids.length) {
       const { data, error } = await supabaseClient
         .from("payroll_run_items")
-        .select("payroll_run_id, gross_pay, paye, nis, nht, education_tax, pension, net_pay")
+        .select("*")
         .eq("employee_id", item.employee_id)
         .in("payroll_run_id", ids);
       if (error) throw error;
@@ -662,25 +692,20 @@ function collectPayslipForPdf() {
       label: text(query("span", box)),
       value: text(query("strong", box))
     })),
-    ytd: [...document.querySelectorAll(".payslip-ytd")].map((section) => ({
-      heading: text(query("h4", section)),
-      note: text(query(".payslip-ytd-note", section)),
-      rows: [...section.querySelectorAll(".payslip-row")].map((row) => ({
-        label: text(query("span", row)),
-        value: text(query("strong", row)),
-        total: row.classList.contains("total-row")
-      }))
-    }))[0] || null,
-    sections: [...document.querySelectorAll(".payslip-section:not(.payslip-ytd)")].map((section) => ({
+    ytdHead: text(query(".payslip-ytd-head span:last-child")),
+    ytdNote: text(query(".payslip-ytd-note")),
+    netYtd: text(query(".payslip-net-pay .payslip-ytd-val")),
+    sections: [...document.querySelectorAll(".payslip-section")].map((section) => ({
       heading: text(query("h4", section)),
       rows: [...section.querySelectorAll(".payslip-row")].map((row) => ({
         label: text(query("span", row)),
-        value: text(query("strong", row)),
+        value: text(query("strong:not(.payslip-ytd-val)", row)),
+        ytd: text(query(".payslip-ytd-val", row)),
         total: row.classList.contains("total-row")
       }))
     })),
     netLabel: text(query(".payslip-net-pay span")) || "Net pay",
-    netValue: text(query(".payslip-net-pay strong")),
+    netValue: text(query(".payslip-net-pay strong:not(.payslip-ytd-val)")),
     footer: [...document.querySelectorAll(".payslip-footer p, .payslip-footer strong")]
       .map(text)
       .filter(Boolean)
@@ -697,6 +722,7 @@ function drawPayslipPdf(JsPdf, data, logo) {
   const teal = [22, 166, 161];
   const muted = [118, 121, 138];
   const ink = [27, 29, 47];
+  const ytdLeft = right - 130;   // "This period" column when year-to-date is shown
   let y = 0;
 
   const ensureSpace = (needed) => {
@@ -823,6 +849,12 @@ function drawPayslipPdf(JsPdf, data, logo) {
     doc.setFontSize(8);
     doc.setTextColor(...purple);
     doc.text(section.heading.toUpperCase(), margin, y);
+    if (data.ytdHead) {
+      doc.setTextColor(...muted);
+      doc.setFontSize(7);
+      doc.text("THIS PERIOD", ytdLeft, y, { align: "right" });
+      doc.text(data.ytdHead.toUpperCase(), right, y, { align: "right" });
+    }
     y += 14;
 
     section.rows.forEach((row) => {
@@ -841,7 +873,13 @@ function drawPayslipPdf(JsPdf, data, logo) {
       doc.setTextColor(...(row.total ? purple : ink));
       doc.text(row.label, margin, y);
       doc.setFont("helvetica", "bold");
-      doc.text(row.value, right, y, { align: "right" });
+      if (data.ytdHead) {
+        doc.text(row.value, ytdLeft, y, { align: "right" });
+        if (!row.total) doc.setTextColor(...muted);
+        doc.text(row.ytd || "", right, y, { align: "right" });
+      } else {
+        doc.text(row.value, right, y, { align: "right" });
+      }
 
       if (!row.total) {
         doc.setDrawColor(240, 240, 244);
@@ -867,40 +905,20 @@ function drawPayslipPdf(JsPdf, data, logo) {
   doc.text(data.netLabel, margin, y);
   doc.setFontSize(17);
   doc.setTextColor(...teal);
-  doc.text(data.netValue, right, y, { align: "right" });
-  y += 40;
-
-  // Year to date (smaller, after net pay)
-  if (data.ytd && data.ytd.rows.length) {
-    ensureSpace(40 + data.ytd.rows.length * 16);
-    doc.setDrawColor(230, 231, 238);
-    doc.line(margin, y - 14, right, y - 14);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.setTextColor(...purple);
-    doc.text(data.ytd.heading.toUpperCase(), margin, y);
-    y += 14;
-
-    data.ytd.rows.forEach((row) => {
-      doc.setFont("helvetica", row.total ? "bold" : "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(...ink);
-      doc.text(row.label, margin, y);
-      doc.setFont("helvetica", "bold");
-      doc.text(row.value, right, y, { align: "right" });
-      y += 15;
-    });
-
-    if (data.ytd.note) {
+  if (data.ytdHead) {
+    doc.text(data.netValue, ytdLeft, y, { align: "right" });
+    doc.setFontSize(11);
+    doc.setTextColor(...muted);
+    doc.text(data.netYtd || "", right, y, { align: "right" });
+    if (data.ytdNote) {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
-      doc.setTextColor(...muted);
-      doc.text(data.ytd.note, margin, y);
-      y += 14;
+      doc.text(data.ytdNote, right, y + 16, { align: "right" });
     }
-
-    y += 16;
+  } else {
+    doc.text(data.netValue, right, y, { align: "right" });
   }
+  y += 40;
 
   // Footer
   doc.setFont("helvetica", "normal");
