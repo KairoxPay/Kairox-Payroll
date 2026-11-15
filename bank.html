@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | Bank payments</title>
+  <link rel="stylesheet" href="css/dashboard-v2.css">
+  <link rel="stylesheet" href="css/app-pages.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <!-- Replaced by the standard sidebar from js/topbar.js. These links only show if that script cannot load. -->
+      <div class="brand"><div class="brand-mark">K</div><div><h1>KAIROX</h1><p>Payroll</p></div></div>
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="dashboard-v2.html"><span>Home</span></a>
+        <a class="nav-item" href="payroll.html"><span>Payroll</span></a>
+        <a class="nav-item active" href="bank.html" aria-current="page"><span>Bank payments</span></a>
+        <a class="nav-item" href="settings.html"><span>Settings</span></a>
+      </nav>
+    </aside>
+
+    <main class="dashboard-main">
+      <div id="pageBanner" class="page-banner" hidden></div>
+
+      <header class="topbar">
+        <div>
+          <h2>Bank payments</h2>
+          <p>Keep each employee's bank account and download a payment file to pay a processed payroll through your bank.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="notification-button" aria-label="Notifications">♢<span class="notification-count">0</span></button>
+          <div class="topbar-avatar">?</div>
+        </div>
+      </header>
+
+      <div id="bankMessage" class="form-message" role="status" style="margin:0 0 14px"></div>
+
+      <section class="page-card">
+        <div class="page-card-head">
+          <div>
+            <h3>Payment files</h3>
+            <p>One file per processed payroll, with each person's net pay and bank account.</p>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Pay period</th><th>Pay date</th><th class="num">People</th><th class="num">Total net pay</th><th>Bank details</th><th></th></tr></thead>
+            <tbody id="runBody"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody>
+          </table>
+        </div>
+        <p class="note"><strong>How to pay:</strong> click <strong>Download file</strong>, check your NCB Originator ID and company account, and download the
+          <strong>NCB ACH file (.txt)</strong>. In NCB Business Online Banking, upload it as an <strong>ACH</strong> file, check the total and approve it.
+          The file pays every bank in Jamaica that is on the ACH list. Kairox Pay does not move any money, and a CSV summary is there for your records.</p>
+      </section>
+
+      <section class="page-card">
+        <div class="page-card-head">
+          <div>
+            <h3>Employee bank accounts</h3>
+            <p>Only admins, managing directors and payroll officers can see these. Every change is recorded in the audit trail.</p>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Employee</th><th>Bank</th><th>Branch</th><th>Account</th><th>Type</th><th></th></tr></thead>
+            <tbody id="acctBody"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="dialog-backdrop" id="bankDialog" hidden>
+        <div class="dialog" id="bankDialogBox" role="dialog" aria-modal="true" aria-labelledby="bankDialogTitle" style="width:min(560px,100%)"></div>
+      </div>
+
+      <footer class="dashboard-footer">
+        <span>© 2026 Kairox Technologies</span>
+        <span>Version 1.0.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/bank-codes.js"></script>
+  <script src="js/bank.js"></script>
+  <script src="js/topbar.js"></script>
+</body>
+</html>

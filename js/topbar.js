@@ -736,6 +736,7 @@
   // Every page used to carry its own sidebar, written and styled differently. This builds the same one everywhere,
   // from the person's role, and replaces whatever the page had. The page's content is not touched.
   const SIDEBAR_ICONS = {
+    bank: '<path d="M3 10h18"/><path d="M12 3l9 5H3z"/><path d="M5 10v8M9 10v8M15 10v8M19 10v8"/><path d="M3 21h18"/>',
     home: '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
     users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
     team: '<path d="M18 21a8 8 0 0 0-16 0"/><circle cx="10" cy="8" r="5"/><path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/>',
@@ -780,7 +781,7 @@
     return [
       { items: [item("dashboard-v2.html", "Home", "home")] },
       { title: "People", items: [item("employees-v2.html", "Employees", "users"), item("people.html", "Team & access", "team"), item("leave.html", "Leave", "calendar"), item("leavers.html", "Leavers", "leaver")] },
-      { title: "Pay", items: [item("payroll.html", "Payroll", "payroll"), item("payslips.html", "Payslips", "payslip"), ...(canEmail ? [item("notices.html", "Email payslips", "mail")] : []), item("reports.html", "Reports", "chart"), item("compliance.html", "Compliance", "shield")] },
+      { title: "Pay", items: [item("payroll.html", "Payroll", "payroll"), item("payslips.html", "Payslips", "payslip"), ...(canEmail ? [item("notices.html", "Email payslips", "mail"), item("bank.html", "Bank payments", "bank")] : []), item("reports.html", "Reports", "chart"), item("compliance.html", "Compliance", "shield")] },
       { title: "Company", items: [item("documents.html", "Documents", "folder"), item("settings.html", "Settings", "settings"), item("support.html", "Support", "help"), ...portal] }
     ];
   }
@@ -907,7 +908,7 @@
   // database, which refuses them the data whatever the page does.
   const APP_PAGES = [
     "dashboard-v2.html", "employees-v2.html", "employee-profile.html", "edit-employee.html", "add-employee.html", "payroll.html", "payslips.html",
-    "payslip.html", "notices.html", "compliance.html", "reports.html", "documents.html", "settings.html", "leave.html", "leavers.html", "people.html", "me.html", "support.html"
+    "payslip.html", "notices.html", "bank.html", "compliance.html", "reports.html", "documents.html", "settings.html", "leave.html", "leavers.html", "people.html", "me.html", "support.html"
   ];
   const ROLE_PAGES = {
     hr: ["people.html", "leave.html", "documents.html", "support.html", "me.html"],
