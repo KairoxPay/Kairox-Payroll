@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | Backup</title>
+  <link rel="stylesheet" href="css/dashboard-v2.css">
+  <link rel="stylesheet" href="css/app-pages.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <!-- Replaced by the standard sidebar from js/topbar.js. These links only show if that script cannot load. -->
+      <div class="brand"><div class="brand-mark">K</div><div><h1>KAIROX</h1><p>Payroll</p></div></div>
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="dashboard-v2.html"><span>Home</span></a>
+        <a class="nav-item active" href="backup.html" aria-current="page"><span>Backup</span></a>
+      </nav>
+    </aside>
+
+    <main class="dashboard-main">
+      <div id="pageBanner" class="page-banner" hidden></div>
+
+      <header class="topbar">
+        <div>
+          <h2>Backup</h2>
+          <p>Download a copy of this company's records to keep safe on your own computer.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="notification-button" aria-label="Notifications">♢<span class="notification-count">0</span></button>
+          <div class="topbar-avatar">?</div>
+        </div>
+      </header>
+
+      <section class="page-card">
+        <div class="page-card-head"><div><h3>Download a backup</h3>
+          <p>Employees, pay items, every payroll and payslip line, leave, departures, filings, bank details, rates and settings
+            for the company chosen in the sidebar. Supabase's Free plan does not keep backups you can restore, so do this
+            at least once a month and after each payroll.</p></div></div>
+        <div class="row-actions">
+          <button type="button" class="btn primary" id="bkpXlsx">Download backup (Excel)</button>
+          <button type="button" class="btn" id="bkpJson">Download full copy (JSON)</button>
+        </div>
+        <div id="bkpMsg" class="form-message" role="status" style="margin-top:12px"></div>
+        <div class="table-wrap" style="margin-top:12px"><table class="data">
+          <thead><tr><th>Records</th><th class="num">Rows</th><th></th></tr></thead>
+          <tbody id="bkpBody"><tr class="empty-row"><td colspan="3">Click a download button to start.</td></tr></tbody></table></div>
+        <p class="note">Keep backup files private: they contain pay and bank details. Store them in a password-protected folder or an
+          encrypted drive, not in email. Uploaded files (documents and photos) are not included; download those from the Documents page.
+          The Excel file is for reading and checking; the JSON file is the complete copy needed to restore data.</p>
+      </section>
+
+      <footer class="dashboard-footer">
+        <span>© 2026 Kairox Technologies</span>
+        <span>Version 1.0.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/backup.js"></script>
+  <script src="js/topbar.js"></script>
+</body>
+</html>
