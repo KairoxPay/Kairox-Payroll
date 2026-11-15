@@ -176,9 +176,13 @@ function meRenderPayslips() {
     : '<tr class="empty-row"><td colspan="6">No payslips yet. They appear here once a payroll has been processed.</td></tr>';
 }
 
-function mePayslipHtml(p) {
+// y = year-to-date totals (my_payslip_ytd), or null: then the payslip shows one column as before.
+function mePayslipHtml(p, y) {
   const company = me.company || {};
-  const lines = (label, value, always) => (always || Number(value) ? `<tr><td>${label}</td><td class="num">${meMoney(value)}</td></tr>` : "");
+  const ytdCell = (key, bold) => (y ? `<td class="num" style="color:${bold ? "inherit" : "#6f7285"}">${bold ? "<strong>" : ""}${meMoney(y[key])}${bold ? "</strong>" : ""}</td>` : "");
+  const lines = (label, value, always, key) =>
+    (always || Number(value) || (y && key && Number(y[key])) ? `<tr><td>${label}</td><td class="num">${meMoney(value)}</td>${ytdCell(key)}</tr>` : "");
+  const head = (title) => (y ? `<tr><th>${title}</th><th class="num">This period</th><th class="num">Year to date ${y.tax_year}</th></tr>` : `<tr><th colspan="2">${title}</th></tr>`);
   const logo = company.logo ? `<img src="${meEsc(company.logo)}" alt="" style="max-width:170px;max-height:60px;display:block;margin-bottom:8px">` : "";
 
   return `
@@ -188,16 +192,17 @@ function mePayslipHtml(p) {
       <p class="muted small" style="margin:2px 0 14px">${[company.trn ? "TRN " + company.trn : "", company.nis_number ? "NIS " + company.nis_number : ""].filter(Boolean).map(meEsc).join(" · ")}</p>
       <h3 style="margin:0 0 8px">Payslip: ${meEsc(meFmt(p.period_start))} to ${meEsc(meFmt(p.period_end))}</h3>
       <p style="margin:0 0 14px">${meEsc(me.name)}${me.employee_number ? " · " + meEsc(me.employee_number) : ""}${p.employee_title || me.title ? " · " + meEsc(p.employee_title || me.title) : ""}<br>Paid ${meEsc(meFmt(p.pay_date))}${Number(p.unpaid_days) ? ` · ${meDays(p.unpaid_days)} unpaid day(s)` : ""}</p>
-      <table class="data" style="margin-bottom:14px"><thead><tr><th colspan="2">Earnings</th></tr></thead><tbody>
-        ${lines("Basic salary", p.basic_salary, true)}${lines("Overtime", p.overtime)}${lines("Bonus", p.bonus)}${lines("Taxable allowances", p.taxable_allowance)}${lines("Adjustments", p.adjustment)}
-        <tr><td><strong>Gross pay</strong></td><td class="num"><strong>${meMoney(p.gross_pay)}</strong></td></tr>
-        ${lines("Non-taxable allowances", p.exempt_allowance)}
+      <table class="data" style="margin-bottom:14px"><thead>${head("Earnings")}</thead><tbody>
+        ${lines("Basic salary", p.basic_salary, true, "basic_salary")}${lines("Overtime", p.overtime, false, "overtime")}${lines("Bonus", p.bonus, false, "bonus")}${lines("Taxable allowances", p.taxable_allowance, false, "taxable_allowance")}${lines("Adjustments", p.adjustment, false, "adjustment")}
+        <tr><td><strong>Gross pay</strong></td><td class="num"><strong>${meMoney(p.gross_pay)}</strong></td>${ytdCell("gross_pay", true)}</tr>
+        ${lines("Non-taxable allowances", p.exempt_allowance, false, "exempt_allowance")}
       </tbody></table>
-      <table class="data" style="margin-bottom:14px"><thead><tr><th colspan="2">Deductions</th></tr></thead><tbody>
-        ${lines("Income tax (PAYE)", p.paye, true)}${lines("NIS", p.nis, true)}${lines("NHT", p.nht, true)}${lines("Education Tax", p.education_tax, true)}${lines("Pension", p.pension)}${lines("Loan repayment", p.loan_deduction)}${lines("Other deductions", p.other_deductions)}
-        <tr><td><strong>Total deductions</strong></td><td class="num"><strong>${meMoney(p.total_deductions)}</strong></td></tr>
+      <table class="data" style="margin-bottom:14px"><thead>${head("Deductions")}</thead><tbody>
+        ${lines("Income tax (PAYE)", p.paye, true, "paye")}${lines("NIS", p.nis, true, "nis")}${lines("NHT", p.nht, true, "nht")}${lines("Education Tax", p.education_tax, true, "education_tax")}${lines("Pension", p.pension, false, "pension")}${lines("Loan repayment", p.loan_deduction, false, "loan_deduction")}${lines("Other deductions", p.other_deductions, false, "other_deductions")}
+        <tr><td><strong>Total deductions</strong></td><td class="num"><strong>${meMoney(p.total_deductions)}</strong></td>${ytdCell("total_deductions", true)}</tr>
       </tbody></table>
       <p style="font-size:1.15rem;margin:0"><strong>Net pay ${meMoney(p.net_pay)}</strong></p>
+      ${y ? `<p style="margin:4px 0 0">Net pay year to date: <strong>${meMoney(y.net_pay)}</strong> <span class="muted small">(${y.payslips} ${y.payslips === 1 ? "payslip" : "payslips"} paid in ${y.tax_year}, up to and including this one)</span></p>` : ""}
     </div>`;
 }
 
@@ -220,14 +225,17 @@ function mePrint(html) {
 }
 
 async function meShowPayslip(runId) {
-  const { data, error } = await supabaseClient.rpc("my_payslip", { p_workspace: meWorkspace, p_run: runId });
+  const [{ data, error }, ytd] = await Promise.all([
+    supabaseClient.rpc("my_payslip", { p_workspace: meWorkspace, p_run: runId }),
+    supabaseClient.rpc("my_payslip_ytd", { p_workspace: meWorkspace, p_run: runId })   // missing until phase33 SQL is run: then no YTD column
+  ]);
 
   if (error || !data || !data[0]) {
     meMessage((error && error.message) || "That payslip could not be loaded.", "error");
     return;
   }
 
-  const html = mePayslipHtml(data[0]);
+  const html = mePayslipHtml(data[0], !ytd.error && ytd.data && ytd.data[0] ? ytd.data[0] : null);
   meDialog({ title: "Payslip", subtitle: "", bodyHtml: html, submitText: "Print or save as PDF", wide: true, onSubmit: async () => { mePrint(html); return "keep"; } });
 }
 
