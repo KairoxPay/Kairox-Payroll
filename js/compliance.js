@@ -230,7 +230,7 @@ function cpRenderAnnual() {
           <td>${year}</td>
           <td>${soft ? "Target: " : ""}${cpEsc(cpLong(due))}</td>
           <td><span class="badge ${status.css}">${cpEsc(status.text)}</span></td>
-          <td>${cpActions(type, String(year))}</td>
+          <td><div class="row-actions">${type === "S02" ? `<button type="button" class="btn small" data-s02="${year}">Prepare return</button>` : ""}${cpActions(type, String(year))}</div></td>
         </tr>`;
     })
     .join("");
