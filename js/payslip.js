@@ -136,6 +136,92 @@ function addPayslipExtraRows(item) {
   );
 }
 
+/* =====================================================
+   YEAR TO DATE
+   Totals for this employee across the calendar year of this payslip's pay date: every PROCESSED payroll paid on or
+   before it, plus this payslip itself (so a draft still shows what the year will be once it is processed).
+===================================================== */
+const PAYSLIP_YTD_FIELDS = [
+  ["Gross pay", "gross_pay"], ["PAYE", "paye"], ["NIS", "nis"], ["NHT", "nht"],
+  ["Education Tax", "education_tax"], ["Pension", "pension"], ["Net pay", "net_pay"]
+];
+
+function payslipRunDate(run) {
+  return String(run.pay_date || run.period_end || "").slice(0, 10);
+}
+
+// Pure: which runs count, and the totals. Exported for tests.
+function payslipYtdTotals(thisRun, thisItem, runs, items) {
+  const date = payslipRunDate(thisRun);
+  const year = date.slice(0, 4);
+  const counted = new Set(
+    (runs || [])
+      .filter((r) => r.id !== thisRun.id && r.status === "processed" && payslipRunDate(r).slice(0, 4) === year && payslipRunDate(r) <= date)
+      .map((r) => r.id)
+  );
+  const lines = (items || []).filter((i) => counted.has(i.payroll_run_id)).concat([thisItem]);
+  const totals = {};
+  PAYSLIP_YTD_FIELDS.forEach(([, key]) => {
+    totals[key] = Math.round(lines.reduce((t, i) => t + Number(i[key] || 0), 0) * 100) / 100;
+  });
+  return { year, payslips: lines.length, totals };
+}
+
+function renderPayslipYtd(ytd) {
+  document.querySelectorAll(".payslip-ytd").forEach((el) => el.remove());
+  const anchor = document.querySelector(".payslip-net-pay");
+  if (!anchor || !ytd) return;
+
+  const rows = PAYSLIP_YTD_FIELDS
+    .filter(([label, key]) => key !== "pension" || ytd.totals.pension)
+    .map(([label, key]) => `
+      <div class="payslip-row${key === "net_pay" ? " total-row" : ""}">
+        <span>${label}</span>
+        <strong>${formatPayslipCurrency(ytd.totals[key])}</strong>
+      </div>`).join("");
+
+  anchor.insertAdjacentHTML("afterend", `
+    <section class="payslip-section payslip-ytd" style="margin-top:22px">
+      <h4>Year to date (${ytd.year})</h4>
+      ${rows}
+      <p class="payslip-ytd-note" style="margin:6px 0 0;font-size:12px;color:#6f7285">
+        ${ytd.payslips} ${ytd.payslips === 1 ? "payslip" : "payslips"} paid in ${ytd.year}, up to and including this one.
+      </p>
+    </section>`);
+}
+
+async function loadPayslipYtd(run, item) {
+  try {
+    const date = payslipRunDate(run);
+    if (!date || !item.employee_id) return;
+
+    const { data: runs, error: runError } = await supabaseClient
+      .from("payroll_runs")
+      .select("id, status, pay_date, period_end")
+      .eq("workspace", run.workspace)
+      .eq("status", "processed")
+      .gte("period_end", `${Number(date.slice(0, 4)) - 1}-12-01`)
+      .lte("period_start", date);
+    if (runError) throw runError;
+
+    const ids = (runs || []).map((r) => r.id).filter((id) => id !== run.id);
+    let items = [];
+    if (ids.length) {
+      const { data, error } = await supabaseClient
+        .from("payroll_run_items")
+        .select("payroll_run_id, gross_pay, paye, nis, nht, education_tax, pension, net_pay")
+        .eq("employee_id", item.employee_id)
+        .in("payroll_run_id", ids);
+      if (error) throw error;
+      items = data || [];
+    }
+
+    renderPayslipYtd(payslipYtdTotals(run, item, runs || [], items));
+  } catch (error) {
+    console.error("Year-to-date totals could not be loaded:", error);   // the payslip itself still shows
+  }
+}
+
 async function loadHistoricalPayslip(
   runId,
   employeeId
@@ -270,6 +356,7 @@ async function loadHistoricalPayslip(
   );
 
   addPayslipExtraRows(payrollItem);
+  await loadPayslipYtd(payrollRun, payrollItem);
 }
 
 async function loadPayslip() {
@@ -575,7 +662,16 @@ function collectPayslipForPdf() {
       label: text(query("span", box)),
       value: text(query("strong", box))
     })),
-    sections: [...document.querySelectorAll(".payslip-section")].map((section) => ({
+    ytd: [...document.querySelectorAll(".payslip-ytd")].map((section) => ({
+      heading: text(query("h4", section)),
+      note: text(query(".payslip-ytd-note", section)),
+      rows: [...section.querySelectorAll(".payslip-row")].map((row) => ({
+        label: text(query("span", row)),
+        value: text(query("strong", row)),
+        total: row.classList.contains("total-row")
+      }))
+    }))[0] || null,
+    sections: [...document.querySelectorAll(".payslip-section:not(.payslip-ytd)")].map((section) => ({
       heading: text(query("h4", section)),
       rows: [...section.querySelectorAll(".payslip-row")].map((row) => ({
         label: text(query("span", row)),
@@ -773,6 +869,38 @@ function drawPayslipPdf(JsPdf, data, logo) {
   doc.setTextColor(...teal);
   doc.text(data.netValue, right, y, { align: "right" });
   y += 40;
+
+  // Year to date (smaller, after net pay)
+  if (data.ytd && data.ytd.rows.length) {
+    ensureSpace(40 + data.ytd.rows.length * 16);
+    doc.setDrawColor(230, 231, 238);
+    doc.line(margin, y - 14, right, y - 14);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(...purple);
+    doc.text(data.ytd.heading.toUpperCase(), margin, y);
+    y += 14;
+
+    data.ytd.rows.forEach((row) => {
+      doc.setFont("helvetica", row.total ? "bold" : "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(...ink);
+      doc.text(row.label, margin, y);
+      doc.setFont("helvetica", "bold");
+      doc.text(row.value, right, y, { align: "right" });
+      y += 15;
+    });
+
+    if (data.ytd.note) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(...muted);
+      doc.text(data.ytd.note, margin, y);
+      y += 14;
+    }
+
+    y += 16;
+  }
 
   // Footer
   doc.setFont("helvetica", "normal");
