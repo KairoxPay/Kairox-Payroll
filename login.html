@@ -140,6 +140,16 @@
     @media (max-width: 520px) { .card { padding: 32px 22px 28px; border-radius: 22px; } .logo img { width: 170px; } }
     @media (prefers-reduced-motion: no-preference) { .primary, input, .toggle-password { transition: filter .15s ease, border-color .15s ease, box-shadow .15s ease; } }
   </style>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#2b0f5f">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Kairox Pay">
+  <script>
+    if ("serviceWorker" in navigator && window.isSecureContext) {
+      window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
+    }
+  </script>
 </head>
 <body>
   <div class="login-page">
