@@ -81,6 +81,15 @@ function formatHistoricalPayslipDate(dateString) {
   ).format(date);
 }
 
+// "Overtime (6 h at 1.5×, 4 h at 2×)" when the hours were entered on the payroll.
+function payslipOvertimeLabel(item) {
+  const i = (item && item.inputs) || {};
+  const parts = [];
+  if (Number(i.overtimeHours) > 0) parts.push(`${Number(i.overtimeHours)} h at 1.5×`);
+  if (Number(i.holidayHours) > 0) parts.push(`${Number(i.holidayHours)} h at 2×`);
+  return parts.length ? `Overtime (${parts.join(", ")})` : "Overtime";
+}
+
 function addPayslipExtraRows(item) {
   document.querySelectorAll(".payslip-extra-row").forEach((el) => el.remove());
 
@@ -94,7 +103,7 @@ function addPayslipExtraRows(item) {
   `;
 
   const earnings = [
-    ["Overtime", item.overtime, "overtime"],
+    [payslipOvertimeLabel(item), item.overtime, "overtime"],
     ["Bonus", item.bonus, "bonus"],
     ["Taxable allowances", item.taxable_allowance, "taxable_allowance"],
     ["Adjustment", item.adjustment, "adjustment"],

@@ -516,6 +516,9 @@ function blankPayrollInputs() {
     loanDeduction: 0,
     otherDeductions: 0,
     payeAdjustment: 0,
+    overtimeHours: 0,
+    holidayHours: 0,
+    weeklyHours: 40,
     notes: "",
     exempt: { nis: false, nht: false, edTax: false, paye: false }
   };
@@ -528,7 +531,8 @@ function normaliseInputs(raw) {
   [
     "overtime", "bonus", "taxableAllowance", "exemptAllowance",
     "adjustment", "unpaidDays", "workingDays", "pension",
-    "loanDeduction", "otherDeductions", "payeAdjustment"
+    "loanDeduction", "otherDeductions", "payeAdjustment",
+    "overtimeHours", "holidayHours", "weeklyHours"
   ].forEach((key) => {
     if (source[key] !== undefined && source[key] !== null && source[key] !== "") {
       inputs[key] = payrollNumber(source[key]);
@@ -537,6 +541,10 @@ function normaliseInputs(raw) {
 
   if (!(inputs.workingDays > 0)) {
     inputs.workingDays = defaultWorkingDays(getPayrollFrequency());
+  }
+
+  if (!(inputs.weeklyHours > 0)) {
+    inputs.weeklyHours = 40;
   }
 
   inputs.notes = String(source.notes || "");
@@ -1403,6 +1411,20 @@ function updateWorkflowControls() {
   }
 }
 
+/* ================= OVERTIME FROM HOURS =================
+   Hourly rate = monthly salary x 12 / 52 / normal weekly hours (40 unless changed).
+   Overtime is paid at 1.5 x the hourly rate; public holidays and rest days (Sundays) at 2 x. Check the rates in the
+   employee's contract: these are the usual Jamaican minimums, and a contract can pay more. */
+function overtimeHourlyRate(monthlySalary, weeklyHours) {
+  const hours = payrollNumber(weeklyHours) > 0 ? payrollNumber(weeklyHours) : 40;
+  return PayrollEngine.round2((payrollNumber(monthlySalary) * 12) / 52 / hours);
+}
+
+function overtimeFromHours(monthlySalary, weeklyHours, overtimeHours, holidayHours) {
+  const rate = overtimeHourlyRate(monthlySalary, weeklyHours);
+  return PayrollEngine.round2(rate * 1.5 * payrollNumber(overtimeHours) + rate * 2 * payrollNumber(holidayHours));
+}
+
 /* ================= PAY ITEMS (per employee, this run) ================= */
 function payItemField(id, label, value, options = {}) {
   const min = options.min === undefined ? "0" : options.min;
@@ -1435,6 +1457,9 @@ function collectPayItems(modal) {
       loanDeduction: read("#pi_loan"),
       otherDeductions: read("#pi_other"),
       payeAdjustment: read("#pi_payeadj"),
+      overtimeHours: read("#pi_ot_hours"),
+      holidayHours: read("#pi_hol_hours"),
+      weeklyHours: read("#pi_week_hours"),
       notes: modal.querySelector("#pi_notes").value.trim(),
       exempt: {
         nis: checked("#pi_ex_nis"),
@@ -1453,6 +1478,7 @@ function validatePayItems(collected, employeeId) {
 
   const nonNegative = [
     ["Overtime", i.overtime], ["Bonus", i.bonus],
+    ["Overtime hours", i.overtimeHours], ["Public holiday / rest-day hours", i.holidayHours],
     ["Taxable allowance", i.taxableAllowance],
     ["Non-taxable allowance", i.exemptAllowance],
     ["Unpaid days", i.unpaidDays], ["Pension", i.pension],
@@ -1467,6 +1493,10 @@ function validatePayItems(collected, employeeId) {
 
   if (!(i.workingDays > 0)) {
     return "Working days in the period must be more than zero.";
+  }
+
+  if (!(i.weeklyHours > 0) || i.weeklyHours > 80) {
+    return "Normal weekly hours must be between 1 and 80.";
   }
 
   if (i.unpaidDays > i.workingDays) {
@@ -1502,6 +1532,15 @@ function openPayItemsDialog(employeeId) {
   const defaults = payrollDefaults[employeeId] || {};
 
   const body = `
+    <fieldset class="pay-items-overtime" style="border:1px solid #e3e4ec;border-radius:10px;padding:10px 14px 4px;margin:0 0 14px">
+      <legend style="font-weight:700;padding:0 6px">Overtime from hours</legend>
+      <div class="pay-items-grid">
+        ${payItemField("pi_ot_hours", "Overtime hours (× 1.5)", inputs.overtimeHours, { step: "0.25" })}
+        ${payItemField("pi_hol_hours", "Public holiday / rest-day hours (× 2)", inputs.holidayHours, { step: "0.25" })}
+        ${payItemField("pi_week_hours", "Normal hours per week", inputs.weeklyHours, { step: "0.5", min: "1" })}
+      </div>
+      <p id="pi_ot_rate" style="margin:4px 0 8px;font-size:13px;color:#6f7285"></p>
+    </fieldset>
     <div class="pay-items-grid">
       ${payItemField("pi_overtime", "Overtime pay (J$)", inputs.overtime)}
       ${payItemField("pi_bonus", "Bonus (J$)", inputs.bonus)}
@@ -1556,8 +1595,30 @@ function openPayItemsDialog(employeeId) {
       `Net pay ${formatPayrollCurrency(preview.netPay)}`;
   };
 
-  modal.addEventListener("input", refreshPreview);
+  // Typing hours fills in the overtime pay. The amount can still be typed in directly when there are no hours.
+  const refreshOvertime = (event) => {
+    const fromHours = event && ["pi_ot_hours", "pi_hol_hours", "pi_week_hours"].includes(event.target.id);
+    const week = modal.querySelector("#pi_week_hours").value;
+    const ot = payrollNumber(modal.querySelector("#pi_ot_hours").value);
+    const hol = payrollNumber(modal.querySelector("#pi_hol_hours").value);
+    const rate = overtimeHourlyRate(employee.gross, week);
+
+    if (fromHours && (ot > 0 || hol > 0)) {
+      modal.querySelector("#pi_overtime").value = overtimeFromHours(employee.gross, week, ot, hol).toFixed(2);
+    }
+    if (fromHours && !(ot > 0) && !(hol > 0)) {
+      modal.querySelector("#pi_overtime").value = "0";
+    }
+
+    modal.querySelector("#pi_ot_rate").textContent =
+      `Hourly rate ${formatPayrollCurrency(rate)} (monthly salary × 12 ÷ 52 ÷ ${payrollNumber(week) > 0 ? payrollNumber(week) : 40} hours). ` +
+      `Overtime ${formatPayrollCurrency(rate * 1.5)} an hour, public holidays and rest days ${formatPayrollCurrency(rate * 2)} an hour. ` +
+      "Check these against the employee's contract.";
+  };
+
+  modal.addEventListener("input", (event) => { refreshOvertime(event); refreshPreview(); });
   modal.addEventListener("change", refreshPreview);
+  refreshOvertime();
   refreshPreview();
 
   loadUnpaidLeaveHint(modal, employeeId);
