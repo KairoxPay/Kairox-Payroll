@@ -754,6 +754,7 @@
   // Every page used to carry its own sidebar, written and styled differently. This builds the same one everywhere,
   // from the person's role, and replaces whatever the page had. The page's content is not touched.
   const SIDEBAR_ICONS = {
+    checklist: '<path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 1.5 1.5L7.5 5M3.5 12l1.5 1.5L7.5 11M3.5 18l1.5 1.5L7.5 17"/>',
     lock: '<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/>',
     bank: '<path d="M3 10h18"/><path d="M12 3l9 5H3z"/><path d="M5 10v8M9 10v8M15 10v8M19 10v8"/><path d="M3 21h18"/>',
     home: '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
@@ -791,7 +792,7 @@
       return [{ items: [item("me.html", "My portal", "portal"), item("security.html", "Account security", "lock"), item("support.html", "Support", "help")] }];
     }
     if (kind === "hr") {
-      return [{ items: [item("people.html", "People", "team"), item("leave.html", "Leave", "calendar"), item("documents.html", "Documents", "folder"), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }];
+      return [{ items: [item("people.html", "People", "team"), item("leave.html", "Leave", "calendar"), item("onboarding.html", "New hires", "checklist"), item("documents.html", "Documents", "folder"), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }];
     }
     if (kind === "manager") {
       return [{ items: [item("people.html", "My team", "team"), item("leave.html", "Leave", "calendar"), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }];
@@ -799,7 +800,7 @@
 
     return [
       { items: [item("dashboard-v2.html", "Home", "home")] },
-      { title: "People", items: [item("employees-v2.html", "Employees", "users"), item("people.html", "Team & access", "team"), item("leave.html", "Leave", "calendar"), item("leavers.html", "Leavers", "leaver")] },
+      { title: "People", items: [item("employees-v2.html", "Employees", "users"), item("people.html", "Team & access", "team"), item("leave.html", "Leave", "calendar"), item("onboarding.html", "New hires", "checklist"), item("leavers.html", "Leavers", "leaver")] },
       { title: "Pay", items: [item("payroll.html", "Payroll", "payroll"), item("payslips.html", "Payslips", "payslip"), ...(canEmail ? [item("notices.html", "Email payslips", "mail"), item("bank.html", "Bank payments", "bank")] : []), item("reports.html", "Reports", "chart"), item("compliance.html", "Compliance", "shield")] },
       { title: "Company", items: [item("documents.html", "Documents", "folder"), item("settings.html", "Settings", "settings"), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }
     ];
@@ -927,10 +928,10 @@
   // database, which refuses them the data whatever the page does.
   const APP_PAGES = [
     "dashboard-v2.html", "employees-v2.html", "employee-profile.html", "edit-employee.html", "add-employee.html", "payroll.html", "payslips.html",
-    "payslip.html", "notices.html", "bank.html", "compliance.html", "reports.html", "documents.html", "settings.html", "leave.html", "leavers.html", "people.html", "me.html", "support.html", "security.html"
+    "payslip.html", "notices.html", "bank.html", "compliance.html", "reports.html", "documents.html", "settings.html", "leave.html", "leavers.html", "people.html", "me.html", "support.html", "security.html", "onboarding.html"
   ];
   const ROLE_PAGES = {
-    hr: ["people.html", "leave.html", "documents.html", "support.html", "me.html", "security.html"],
+    hr: ["people.html", "leave.html", "documents.html", "support.html", "me.html", "security.html", "onboarding.html"],
     manager: ["people.html", "leave.html", "support.html", "me.html", "security.html"],
     employee: ["me.html", "support.html", "security.html"]
   };
