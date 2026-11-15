@@ -1014,3 +1014,27 @@
     init();
   }
 })();
+
+/* ---------- installable app (Add to Home Screen) ----------
+   Adds the app manifest and icons to every page that loads this file, and registers sw.js, which only provides the
+   offline page (no payroll data is ever stored on the phone). */
+(function () {
+  try {
+    if (typeof document === "undefined" || !document.head || /jsdom/i.test(navigator.userAgent)) return;
+    const add = (tag, attrs) => {
+      if (document.head.querySelector(`${tag}[${Object.keys(attrs)[0]}="${Object.values(attrs)[0]}"]`)) return;
+      const el = document.createElement(tag);
+      Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+      document.head.appendChild(el);
+    };
+    add("link", { rel: "manifest", href: "manifest.webmanifest" });
+    add("meta", { name: "theme-color", content: "#2b0f5f" });
+    add("link", { rel: "apple-touch-icon", href: "assets/icons/apple-touch-icon.png" });
+    add("meta", { name: "apple-mobile-web-app-capable", content: "yes" });
+    add("meta", { name: "apple-mobile-web-app-title", content: "Kairox Pay" });
+    add("meta", { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" });
+    if ("serviceWorker" in navigator && window.isSecureContext) {
+      window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
+    }
+  } catch (error) { /* installing is optional */ }
+})();
