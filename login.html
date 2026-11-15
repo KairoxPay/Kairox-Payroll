@@ -236,6 +236,18 @@
           </button>
         </form>
 
+        <!-- Second step: shown only to people who have turned on two-step sign-in -->
+        <form id="codeForm" novalidate hidden>
+          <label for="loginCode">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>
+            Code from your authenticator app
+          </label>
+          <input id="loginCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" required>
+          <div id="codeMessage" role="alert" aria-live="polite"></div>
+          <button id="codeButton" class="primary" type="submit"><span id="codeButtonText">Verify</span></button>
+          <p class="help" style="margin-top:12px"><button id="codeCancel" class="link" type="button">Use a different account</button></p>
+        </form>
+
         <div class="secure">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.6 3.1 8.3 7.5 9.5 4.4-1.2 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m8.8 12.2 2.4 2.4 4.2-4.6"/></svg>
           <div><strong>Secure sign in</strong><span>Your account is protected, and payroll data is visible only to the people you give access to.</span></div>
@@ -272,7 +284,7 @@
           }
         }
 
-        if (["admin", "payroll", "viewer"].includes(role)) return "dashboard-v2.html";
+        if (["admin", "director", "payroll", "viewer"].includes(role)) return "dashboard-v2.html";
         if (role === "hr" || role === "manager") return "people.html";
 
         const { data: mine } = await supabaseClient.rpc("my_employee", { p_workspace: null });
@@ -322,13 +334,78 @@
       return text || "Something went wrong. Please try again.";
     }
 
+    // Two-step sign-in: true when this account has an authenticator but this session has not entered a code yet.
+    async function needsCode() {
+      try {
+        const { data, error } = await supabaseClient.auth.mfa.getAuthenticatorAssuranceLevel();
+        return !error && data && data.nextLevel === "aal2" && data.currentLevel !== "aal2";
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function showCodeStep() {
+      document.getElementById("loginForm").hidden = true;
+      document.getElementById("codeForm").hidden = false;
+      document.querySelector(".sub").textContent = "Enter the 6-digit code from your authenticator app.";
+      document.getElementById("loginCode").focus();
+    }
+
+    async function finishSignIn() {
+      if (await needsCode()) {
+        setSigningIn(false);
+        showCodeStep();
+        return;
+      }
+      window.location.href = await loginTarget();
+    }
+
     async function redirectIfSignedIn() {
       const { data } = await supabaseClient.auth.getSession();
 
       if (data && data.session) {
-        window.location.href = await loginTarget();
+        await finishSignIn();
       }
     }
+
+    document.getElementById("codeForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const box = document.getElementById("codeMessage");
+      const code = document.getElementById("loginCode").value.replace(/\D/g, "");
+
+      if (code.length !== 6) {
+        box.textContent = "Enter the 6-digit code from your app.";
+        box.className = "error";
+        return;
+      }
+
+      document.getElementById("codeButton").disabled = true;
+      document.getElementById("codeButtonText").textContent = "Checking...";
+
+      try {
+        const { data: factors, error: listError } = await supabaseClient.auth.mfa.listFactors();
+        if (listError) throw listError;
+        const factor = ((factors && factors.totp) || []).find((f) => f.status === "verified");
+        if (!factor) throw new Error("No authenticator is set up for this account.");
+        const { error } = await supabaseClient.auth.mfa.challengeAndVerify({ factorId: factor.id, code });
+        if (error) throw error;
+        window.location.href = await loginTarget();
+      } catch (error) {
+        const text = String((error && error.message) || "");
+        box.textContent = /rate limit|too many/i.test(text)
+          ? "Too many attempts. Wait a minute and try again."
+          : "That code did not work. Codes change every 30 seconds: type the one showing now.";
+        box.className = "error";
+        document.getElementById("codeButton").disabled = false;
+        document.getElementById("codeButtonText").textContent = "Verify";
+        document.getElementById("loginCode").select();
+      }
+    });
+
+    document.getElementById("codeCancel").addEventListener("click", async () => {
+      await supabaseClient.auth.signOut();
+      window.location.reload();
+    });
 
     document.getElementById("togglePassword").addEventListener("click", () => {
       const input = document.getElementById("loginPassword");
@@ -369,7 +446,7 @@
         return;
       }
 
-      window.location.href = await loginTarget();
+      await finishSignIn();
     });
 
     // The password-reset email opens index.html, which already has the "choose a new password" screen.
