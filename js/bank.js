@@ -84,6 +84,55 @@ function bkBuildAch({ companyAccount, originatorId, narration, date, lines }) {
     missing: lines.filter((l) => !l.account_number || !/^\d{8}$/.test(l.institution_id || "")), errors: [] };
 }
 
+// Accounting journal for one processed payroll: a balanced double entry, one line per account, in the column layout
+// QuickBooks Online uses for importing journal entries (Journal No, Journal Date, Account Name, Debits, Credits, Description).
+// Account names are suggestions: map them to your own chart of accounts when you import.
+const BK_JOURNAL_ACCOUNTS = {
+  wages: "Salaries and Wages Expense", erTax: "Employer Payroll Taxes Expense", net: "Net Salaries Payable",
+  paye: "PAYE Payable", nis: "NIS Payable", nht: "NHT Payable", edTax: "Education Tax Payable", heart: "HEART/NSTA Payable",
+  pension: "Pension Contributions Payable", loans: "Employee Loans Receivable", other: "Other Payroll Deductions Payable"
+};
+
+function bkBuildJournal(run, items, journalNo) {
+  const r2 = (n) => Math.round((Number(n) || 0) * 100) / 100;
+  const sum = (pick) => r2((items || []).reduce((t, i) => t + (Number(pick(i)) || 0), 0));
+  const er = (i) => i.employer_contributions || {};
+  const t = {
+    wages: sum((i) => Number(i.gross_pay || 0) + Number(i.exempt_allowance || 0)),
+    net: sum((i) => i.net_pay), paye: sum((i) => i.paye), pension: sum((i) => i.pension),
+    loans: sum((i) => i.loan_deduction), other: sum((i) => i.other_deductions),
+    eeNis: sum((i) => i.nis), eeNht: sum((i) => i.nht), eeEd: sum((i) => i.education_tax),
+    erNis: sum((i) => er(i).nis), erNht: sum((i) => er(i).nht), erEd: sum((i) => er(i).edTax), erHeart: sum((i) => er(i).heart)
+  };
+  t.erTotal = r2(t.erNis + t.erNht + t.erEd + t.erHeart);
+
+  const A = BK_JOURNAL_ACCOUNTS;
+  const lines = [
+    [A.wages, t.wages, 0, "Gross pay, including non-taxable allowances"],
+    [A.erTax, t.erTotal, 0, "Employer NIS, NHT, Education Tax and HEART"],
+    [A.net, 0, t.net, "Net pay due to employees"],
+    [A.paye, 0, t.paye, "Income tax deducted"],
+    [A.nis, 0, r2(t.eeNis + t.erNis), "NIS: employee and employer"],
+    [A.nht, 0, r2(t.eeNht + t.erNht), "NHT: employee and employer"],
+    [A.edTax, 0, r2(t.eeEd + t.erEd), "Education Tax: employee and employer"],
+    [A.heart, 0, t.erHeart, "HEART/NSTA: employer"],
+    [A.pension, 0, t.pension, "Pension deducted"],
+    [A.loans, 0, t.loans, "Loan repayments deducted"],
+    [A.other, 0, t.other, "Other deductions"]
+  ].filter(([, d, c]) => d || c);
+
+  const debit = r2(lines.reduce((x, l) => x + l[1], 0));
+  const credit = r2(lines.reduce((x, l) => x + l[2], 0));
+  const date = String(run.pay_date || run.period_end).slice(0, 10);
+  const memo = `Payroll ${run.period_start} to ${run.period_end}`;
+  const head = ["Journal No", "Journal Date", "Account Name", "Debits", "Credits", "Description"];
+  const rows = lines.map(([acct, d, c, desc]) => [journalNo, date, acct, d ? d.toFixed(2) : "", c ? c.toFixed(2) : "", `${memo}: ${desc}`]);
+  return {
+    csv: [head].concat(rows).map((r) => r.map(bkCsvCell).join(",")).join("\r\n"),
+    debit, credit, balanced: Math.abs(debit - credit) < 0.005, legacy: t.erTotal === 0 && (items || []).length > 0
+  };
+}
+
 /* ---------- loading ---------- */
 async function bkAllowed() {
   const { data: s } = await supabaseClient.auth.getSession();
@@ -226,6 +275,7 @@ function bkFileOpen(runId) {
     <div class="dialog-actions" style="flex-wrap:wrap">
       <button type="button" class="btn" data-bk="close">Cancel</button>
       <button type="button" class="btn" data-bk="csv">CSV summary</button>
+      <button type="button" class="btn" data-bk="journal">Accounting journal (CSV)</button>
       <button type="button" class="btn primary" data-bk="ach">Download NCB ACH file (.txt)</button>
     </div>`;
   bkEl("bankDialog").hidden = false;
@@ -252,6 +302,19 @@ async function bkFileDownload(kind) {
   const lines = data || [];
   const stamp = String(run.period_end).slice(0, 7).replace("-", "");
   let note;
+
+  if (kind === "journal") {
+    const items = await supabaseClient.from("payroll_run_items").select("*").eq("payroll_run_id", run.run_id);
+    if (items.error) return fail(items.error.message || "The payroll lines could not be loaded.");
+    const journal = bkBuildJournal(run, items.data || [], `PAY-${String(run.period_end).slice(0, 10).replaceAll("-", "")}`);
+    if (!journal.balanced) return fail(`This payroll does not balance (debits ${bkMoney(journal.debit)}, credits ${bkMoney(journal.credit)}), so no journal was made. Check the payroll lines.`);
+    bkSaveBlob(`Payroll_journal_${stamp}.csv`, journal.csv, "text/csv;charset=utf-8;");
+    note = `Accounting journal downloaded: debits and credits both ${bkMoney(journal.debit)}. Import it into QuickBooks (Journal entries) or send it to your accountant, and match the account names to your chart of accounts.`;
+    if (journal.legacy) note += " This payroll has no employer contributions recorded (an older payroll), so only the employee side is in the journal.";
+    bkClose();
+    bkMessage(note, "ok");
+    return;
+  }
 
   if (kind === "csv") {
     const file = bkBuildFile(lines, `Salary ${label}`.slice(0, 30));
@@ -291,7 +354,7 @@ async function bkStart() {
     if (act) {
       const a = act.dataset.bk;
       if (a === "save") return bkSave();
-      if (a === "ach" || a === "csv") return bkFileDownload(a);
+      if (a === "ach" || a === "csv" || a === "journal") return bkFileDownload(a);
       return bkClose();
     }
     if (t.id === "bankDialog") bkClose();
