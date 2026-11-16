@@ -755,6 +755,7 @@
   // from the person's role, and replaces whatever the page had. The page's content is not touched.
   const SIDEBAR_ICONS = {
     clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+    chat: '<path d="M4 20l1.3-3.9A8 8 0 1 1 8 19z"/><path d="M9 10h6M9 13h4"/>',
     receipt: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>',
     loan: '<circle cx="12" cy="12" r="8.5"/><path d="M14.5 9.2c-.6-.8-1.5-1.2-2.5-1.2-1.4 0-2.5.8-2.5 2s1.1 1.7 2.5 2 2.5.8 2.5 2-1.1 2-2.5 2c-1 0-1.9-.4-2.5-1.2M12 6.5V8m0 8v1.5"/>',
     backup: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
@@ -796,7 +797,7 @@
       return [{ items: [item("me.html", "My portal", "portal"), item("security.html", "Account security", "lock"), item("support.html", "Support", "help")] }];
     }
     if (kind === "hr") {
-      return [{ items: [item("people.html", "People", "team"), item("leave.html", "Leave", "calendar"), item("timesheets.html", "Timesheets", "clock"), item("expenses.html", "Expenses", "receipt"), item("onboarding.html", "New hires", "checklist"), item("documents.html", "Documents", "folder"), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }];
+      return [{ items: [item("people.html", "People", "team"), item("leave.html", "Leave", "calendar"), item("timesheets.html", "Timesheets", "clock"), item("expenses.html", "Expenses", "receipt"), item("onboarding.html", "New hires", "checklist"), item("whatsapp.html", "WhatsApp", "chat"), item("documents.html", "Documents", "folder"), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }];
     }
     if (kind === "manager") {
       return [{ items: [item("people.html", "My team", "team"), item("leave.html", "Leave", "calendar"), item("timesheets.html", "Timesheets", "clock"), item("expenses.html", "Expenses", "receipt"), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }];
@@ -805,7 +806,7 @@
     return [
       { items: [item("dashboard-v2.html", "Home", "home")] },
       { title: "People", items: [item("employees-v2.html", "Employees", "users"), item("people.html", "Team & access", "team"), item("leave.html", "Leave", "calendar"), item("timesheets.html", "Timesheets", "clock"), item("expenses.html", "Expenses", "receipt"), item("onboarding.html", "New hires", "checklist"), item("leavers.html", "Leavers", "leaver")] },
-      { title: "Pay", items: [item("payroll.html", "Payroll", "payroll"), item("payslips.html", "Payslips", "payslip"), ...(canEmail ? [item("notices.html", "Email payslips", "mail"), item("bank.html", "Bank payments", "bank"), item("loans.html", "Loans", "loan")] : []), item("reports.html", "Reports", "chart"), item("compliance.html", "Compliance", "shield")] },
+      { title: "Pay", items: [item("payroll.html", "Payroll", "payroll"), item("payslips.html", "Payslips", "payslip"), ...(canEmail ? [item("notices.html", "Email payslips", "mail"), item("whatsapp.html", "WhatsApp", "chat"), item("bank.html", "Bank payments", "bank"), item("loans.html", "Loans", "loan")] : []), item("reports.html", "Reports", "chart"), item("compliance.html", "Compliance", "shield")] },
       { title: "Company", items: [item("documents.html", "Documents", "folder"), item("settings.html", "Settings", "settings"), ...(canEmail ? [item("backup.html", "Backup", "backup")] : []), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }
     ];
   }
@@ -932,10 +933,10 @@
   // database, which refuses them the data whatever the page does.
   const APP_PAGES = [
     "dashboard-v2.html", "employees-v2.html", "employee-profile.html", "edit-employee.html", "add-employee.html", "payroll.html", "payslips.html",
-    "payslip.html", "notices.html", "bank.html", "compliance.html", "reports.html", "documents.html", "settings.html", "leave.html", "leavers.html", "people.html", "me.html", "support.html", "security.html", "onboarding.html", "backup.html", "loans.html", "timesheets.html", "expenses.html"
+    "payslip.html", "notices.html", "bank.html", "compliance.html", "reports.html", "documents.html", "settings.html", "leave.html", "leavers.html", "people.html", "me.html", "support.html", "security.html", "onboarding.html", "backup.html", "loans.html", "timesheets.html", "expenses.html", "whatsapp.html"
   ];
   const ROLE_PAGES = {
-    hr: ["people.html", "leave.html", "documents.html", "support.html", "me.html", "security.html", "onboarding.html", "timesheets.html", "expenses.html"],
+    hr: ["people.html", "leave.html", "documents.html", "support.html", "me.html", "security.html", "onboarding.html", "timesheets.html", "expenses.html", "whatsapp.html"],
     manager: ["people.html", "leave.html", "support.html", "me.html", "security.html", "timesheets.html", "expenses.html"],
     employee: ["me.html", "support.html", "security.html"]
   };

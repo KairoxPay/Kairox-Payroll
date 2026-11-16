@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | WhatsApp</title>
+  <link rel="stylesheet" href="css/dashboard-v2.css">
+  <link rel="stylesheet" href="css/app-pages.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <!-- Replaced by the standard sidebar from js/topbar.js. These links only show if that script cannot load. -->
+      <div class="brand"><div class="brand-mark">K</div><div><h1>KAIROX</h1><p>Payroll</p></div></div>
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="dashboard-v2.html"><span>Home</span></a>
+        <a class="nav-item active" href="whatsapp.html" aria-current="page"><span>WhatsApp</span></a>
+      </nav>
+    </aside>
+
+    <main class="dashboard-main">
+      <div id="pageBanner" class="page-banner" hidden></div>
+
+      <header class="topbar">
+        <div>
+          <h2>WhatsApp messages</h2>
+          <p>Let staff know on WhatsApp when their payslip is ready, or when leave or an expense claim has been decided. Free: it uses your own WhatsApp.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="notification-button" aria-label="Notifications">♢<span class="notification-count">0</span></button>
+          <div class="topbar-avatar">?</div>
+        </div>
+      </header>
+
+      <div id="waMsg" class="form-message" role="status" style="margin:0 0 14px"></div>
+
+      <section class="page-card">
+        <div class="page-card-head">
+          <div><h3>Ready to send</h3><p>Press <strong>Send</strong>: WhatsApp opens with the message typed, then press send in WhatsApp. Messages never include pay figures, the type of leave or reasons.</p></div>
+          <div class="row-actions" style="flex-wrap:wrap">
+            <select id="waFilter" aria-label="Show"><option value="todo">Not sent yet</option><option value="all">All, including sent</option></select>
+            <select id="waDays" aria-label="Period"><option value="7">Last 7 days</option><option value="14" selected>Last 14 days</option><option value="30">Last 30 days</option><option value="60">Last 60 days</option></select>
+          </div>
+        </div>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th>Employee</th><th>Message</th><th>Phone</th><th>Status</th><th></th></tr></thead>
+          <tbody id="waBody"><tr class="empty-row"><td colspan="5">Loading…</td></tr></tbody></table></div>
+      </section>
+
+      <section class="page-card">
+        <div class="page-card-head"><div><h3>Message to staff</h3>
+          <p>Write one message, then send it to each person with one tap. Write <strong>{name}</strong> where their first name should go. WhatsApp links cannot send to a whole group at once.</p></div></div>
+        <div class="field"><label for="waText">Message</label>
+          <textarea id="waText" rows="3" maxlength="1000" style="width:100%" placeholder="Hi {name}, the office is closed on Friday for the public holiday."></textarea></div>
+        <div class="table-wrap"><table class="data" style="margin-top:10px">
+          <thead><tr><th>Employee</th><th>Department</th><th>Phone</th><th></th></tr></thead>
+          <tbody id="waPeople"><tr class="empty-row"><td colspan="4">Loading…</td></tr></tbody></table></div>
+      </section>
+
+      <div class="dialog-backdrop" id="waDialog" hidden>
+        <div class="dialog" id="waBox" role="dialog" aria-modal="true" aria-labelledby="waTitle" style="width:min(520px,100%)"></div>
+      </div>
+
+      <footer class="dashboard-footer">
+        <span>© 2026 Kairox Technologies</span>
+        <span>Version 1.0.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/whatsapp.js"></script>
+  <script src="js/topbar.js"></script>
+</body>
+</html>
