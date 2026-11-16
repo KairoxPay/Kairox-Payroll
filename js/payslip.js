@@ -727,7 +727,8 @@ function drawPayslipPdf(JsPdf, data, logo) {
   const height = doc.internal.pageSize.getHeight();
   const margin = 40;
   const right = width - margin;
-  const purple = [43, 15, 95];
+  // The company's own colour when it has chosen to use it on payslips (Settings, Company colours), otherwise Kairox purple.
+  const purple = (window.KairoxBrand && window.KairoxBrand.pdfRgb && window.KairoxBrand.pdfRgb()) || [43, 15, 95];
   const teal = [22, 166, 161];
   const muted = [118, 121, 138];
   const ink = [27, 29, 47];

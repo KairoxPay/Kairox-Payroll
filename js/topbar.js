@@ -13,6 +13,73 @@
       return "kairox-exchange";
     }
   }
+  /* ---------- company colours (Phase 45) ---------- */
+  // Each company can have its own main and accent colour. Shades are worked out here so that white text on the menu and
+  // on buttons always stays readable, whatever colour is chosen. Saved per company in this browser so pages open in the
+  // right colours without a flash, then refreshed from the database.
+  const BRAND_KEY = () => `kairoxBrand:${workspaceId()}`;
+  let brand = null;
+
+  const hexRgb = (h) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(h || "")); if (!m) return null; const n = parseInt(m[1], 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+  const rgbHex = (c) => `#${c.map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("")}`;
+  const mixHex = (h, to, t) => { const a = hexRgb(h), b = hexRgb(to); return rgbHex(a.map((v, i) => v + (b[i] - v) * t)); };
+  const luminance = (h) => hexRgb(h).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); })
+    .reduce((s, v, i) => s + v * [0.2126, 0.7152, 0.0722][i], 0);
+  const contrastWith = (a, b) => { const x = luminance(a), y = luminance(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+  // Darken a colour just enough for white text to reach the contrast asked for.
+  const darkenFor = (h, ratio) => { for (let t = 0; t <= 0.95; t += 0.05) { const c = t ? mixHex(h, "#000000", t) : h; if (contrastWith(c, "#ffffff") >= ratio) return c; } return mixHex(h, "#000000", 0.95); };
+
+  function brandShades(b) {
+    const p = b && hexRgb(b.primary) ? String(b.primary).toLowerCase() : null;
+    if (!p) return null;
+    const accent = b.accent && hexRgb(b.accent) ? String(b.accent).toLowerCase() : "#2cb8b3";
+    return { primary: p, accent, button: darkenFor(p, 4.5), top: darkenFor(p, 9), middle: darkenFor(p, 6.5), active: darkenFor(mixHex(p, "#ffffff", 0.12), 4.5),
+      light: mixHex(p, "#ffffff", 0.88), accentText: darkenFor(accent, 4.5) };
+  }
+
+  function brandCss(b) {
+    const s = brandShades(b);
+    if (!s) return "";
+    return `:root { --purple-900: ${s.top}; --purple-800: ${s.middle}; --purple-700: ${s.button}; --purple-600: ${s.button}; --purple-500: ${s.active}; --teal-500: ${s.accent}; }
+      aside.kx-sidebar { background: linear-gradient(180deg, ${s.top} 0%, ${s.middle} 55%, ${s.top} 100%) !important; }
+      .kx-link[aria-current="page"] { background: ${s.active} !important; }
+      .kx-avatar { background: linear-gradient(135deg, ${s.accent}, ${s.accentText}) !important; }
+      .btn.primary, button.primary, a.btn.primary, .payroll-actions button.primary, .pay-period-modal-actions button.primary, .payslip-actions button.primary {
+        background: ${s.button} !important; border-color: ${s.button} !important; color: #fff !important; }
+      .kx-step.next { border-color: ${s.button} !important; } .kx-step-next { background: ${s.button} !important; }
+      ${b.payslips ? `.payslip-header { background: linear-gradient(135deg, ${s.top}, ${s.button}) !important; }` : ""}`;
+  }
+
+  function applyBrand(b, save) {
+    brand = b && hexRgb(b.primary) ? { primary: b.primary, accent: b.accent || null, menuLogo: !!b.menuLogo, payslips: !!b.payslips } : (b && b.menuLogo ? { primary: null, accent: null, menuLogo: true, payslips: false } : null);
+    let tag = document.getElementById("kxBrand");
+    const css = brand ? brandCss(brand) : "";
+    if (css) {
+      if (!tag) { tag = document.createElement("style"); tag.id = "kxBrand"; }
+      tag.textContent = css;
+      document.head.appendChild(tag);   // last, so it wins over the page's own styles
+    } else if (tag) tag.remove();
+    if (save) { try { if (brand) localStorage.setItem(BRAND_KEY(), JSON.stringify(brand)); else localStorage.removeItem(BRAND_KEY()); } catch (error) { /* ignore */ } }
+  }
+
+  try { const cached = JSON.parse(localStorage.getItem(BRAND_KEY()) || "null"); if (cached) applyBrand(cached, false); } catch (error) { /* ignore */ }
+
+  async function loadBrand() {
+    try {
+      const { data, error } = await supabaseClient.rpc("company_brand", { p_workspace: workspaceId() });
+      if (error) return;   // Phase 45 not installed yet: keep the standard colours
+      const row = (data || [])[0] || {};
+      applyBrand({ primary: row.brand_primary, accent: row.brand_accent, menuLogo: row.brand_menu_logo, payslips: row.brand_payslips }, true);
+      renderSidebar();
+    } catch (error) { /* the standard colours stay */ }
+  }
+
+  window.KairoxBrand = {
+    apply: (b, save) => { applyBrand(b, save); renderSidebar(); }, current: () => brand, shades: brandShades, contrast: contrastWith,
+    // Colour for the band at the top of PDF payslips, or null for the standard one.
+    pdfRgb: () => { const s = brand && brand.payslips && brandShades(brand); return s ? hexRgb(s.top) : null; }
+  };
+
   const ROLE_LABELS = { admin: "Administrator", director: "Managing director", payroll: "Payroll / accounts officer", viewer: "Viewer", hr: "HR officer", manager: "Manager" };
   const BELL =
     '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>';
@@ -207,6 +274,7 @@
       }
 
       company.role = role.data || null;
+      loadBrand();
       if (profile.data) company.profile = profile.data;
 
       // An employee cannot read the company profile table: their company's name and logo come with their own record.
@@ -898,6 +966,8 @@
       .kx-link { display: flex; align-items: center; gap: 12px; min-height: 42px; padding: 9px 12px; border-radius: 11px; color: #eee9f8; font-size: 14px; font-weight: 650;
         line-height: 1.2; text-decoration: none; transition: background .18s ease, color .18s ease; }
       .kx-link:hover { color: #fff; background: rgba(255, 255, 255, .09); }
+      .kx-powered { flex: 0 0 auto; margin: 10px 0 0; color: rgba(255, 255, 255, .6); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-align: center; }
+      .kx-brand img { max-height: 72px; object-fit: contain; }
       button.kx-link { width: 100%; border: 0; background: none; font-family: inherit; text-align: left; cursor: pointer; }
       .kx-nav .kx-help { grid-column: 1 / -1; margin-top: 8px; border-top: 1px solid rgba(255, 255, 255, .1); border-radius: 0 0 11px 11px; }
       .kx-link[aria-current="page"] { color: #fff; background: linear-gradient(135deg, rgba(120, 67, 207, .95), rgba(83, 37, 158, .95)); box-shadow: 0 8px 18px rgba(10, 4, 30, .22); }
@@ -942,6 +1012,7 @@
         .kx-sidebar .kx-company-name { display: block; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
         .kx-sidebar .kx-company select { min-height: 36px; padding: 6px 8px; font-size: 13px; }
         .kx-menu { display: inline-flex; }
+        .kx-powered { display: none; grid-column: 1 / -1; } aside.kx-open .kx-powered { display: block; }
         .kx-nav, .kx-foot { display: none; grid-column: 1 / -1; }
         aside.kx-open { overflow-y: auto; }
         aside.kx-open .kx-nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 6px; overflow: visible; padding: 4px 0 0; }
@@ -979,7 +1050,8 @@
       const hasTopbarBell = !!document.querySelector(".notification-button");
       // Only people who can process payroll see "Email payslips" (shown to staff until the role has loaded).
       const canEmail = !profile.signedIn || ["admin", "director", "payroll"].includes(profile.role);
-      const key = [kind, hasPortal, current, roleText, hasTopbarBell, canEmail].join("|");
+      const ownLogo = brand && brand.menuLogo ? companyLogo() : null;
+      const key = [kind, hasPortal, current, roleText, hasTopbarBell, canEmail, ownLogo ? ownLogo.length : 0, brand ? brand.primary : ""].join("|");
 
       if (aside.classList.contains("kx-sidebar") && aside.dataset.kxKey === key) return;
 
@@ -997,10 +1069,12 @@
       aside.removeAttribute("style");
       aside.dataset.kxKey = key;
       aside.innerHTML =
-        `<a class="kx-brand" href="${home}" aria-label="Kairox Pay"><img src="assets/images/kairox-pay-logo.png" alt="Kairox Pay"></a>` +
+        (ownLogo ? `<a class="kx-brand" href="${home}" aria-label="${esc(companyName ? companyName() : "Home")}"><img src="${esc(ownLogo)}" alt="${esc(companyName ? companyName() : "Company logo")}"></a>`
+          : `<a class="kx-brand" href="${home}" aria-label="Kairox Pay"><img src="assets/images/kairox-pay-logo.png" alt="Kairox Pay"></a>`) +
         '<div id="kxCompanySlot"></div>' +
         `<button type="button" class="kx-menu" aria-expanded="false" aria-controls="kxNav">${MENU_ICON}<span>Menu</span></button>` +
         `<nav class="kx-nav" id="kxNav" aria-label="Main">${links}<button type="button" class="kx-link kx-help" aria-haspopup="dialog" title="Help for this page">${HELP_ICON.replace('width="22" height="22"', 'class="kx-icon"')}<span>Help</span></button></nav>` +
+        (brand ? '<div class="kx-powered">Powered by Kairox Pay</div>' : "") +
         '<div class="kx-foot">' +
         `<button type="button" class="kx-user" aria-haspopup="dialog" aria-expanded="false"><span class="user-avatar kx-avatar">${esc(profile.initials || "?")}</span>` +
         `<span class="user-details"><strong>${esc(profile.signedIn ? profile.name : "Not signed in")}</strong><span>${esc(roleText)}</span></span>${sidebarIcon("chevron", "kx-chevron")}</button>` +
