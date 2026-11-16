@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | Setup</title>
+  <link rel="stylesheet" href="css/dashboard-v2.css">
+  <link rel="stylesheet" href="css/app-pages.css">
+  <style>
+    .kx-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    .kx-step { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 16px; border: 1px solid #e7e9f0; border-radius: 14px; background: #fff; }
+    .kx-step.next { border-color: #6f3cc3; box-shadow: 0 0 0 3px rgba(111, 60, 195, .12); }
+    .kx-step.done { background: #f7fbf8; }
+    .kx-step-mark { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: #ece9f6; color: #4b2394; font-weight: 800; }
+    .kx-step.done .kx-step-mark { background: #16a34a; color: #fff; }
+    .kx-step-title { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .kx-step-need { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+    .kx-step-next { padding: 2px 8px; border-radius: 999px; background: #4b2394; color: #fff; font-size: 12px; font-weight: 700; }
+    .kx-step-body p { margin: 4px 0 0; color: #5f6475; font-size: 14px; }
+    .kx-step-body .kx-step-note { color: #17172f; font-weight: 600; }
+    @media (max-width: 620px) { .kx-step { grid-template-columns: 36px minmax(0, 1fr); } .kx-step > .btn { grid-column: 2; justify-self: start; } }
+  </style>
+</head>
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <!-- Replaced by the standard sidebar from js/topbar.js. These links only show if that script cannot load. -->
+      <div class="brand"><div class="brand-mark">K</div><div><h1>KAIROX</h1><p>Payroll</p></div></div>
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="dashboard-v2.html"><span>Home</span></a>
+        <a class="nav-item active" href="setup.html" aria-current="page"><span>Setup</span></a>
+      </nav>
+    </aside>
+
+    <main class="dashboard-main">
+      <div id="pageBanner" class="page-banner" hidden></div>
+
+      <header class="topbar">
+        <div>
+          <h2>Set up your company</h2>
+          <p>Everything Kairox Pay needs before your first payroll, in order. About an hour in total.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="notification-button" aria-label="Notifications">♢<span class="notification-count">0</span></button>
+          <div class="topbar-avatar">?</div>
+        </div>
+      </header>
+
+      <section class="page-card" id="setupProgress" aria-live="polite"><p class="muted">Checking your setup…</p></section>
+
+      <section class="page-card">
+        <div class="page-card-head"><div><h3>Steps</h3><p>Do them in order. Each one is ticked by itself once the work is saved on its page, so you can come back here at any time.</p></div></div>
+        <ol class="kx-steps" id="setupList"></ol>
+      </section>
+
+      <footer class="dashboard-footer">
+        <span>© 2026 Kairox Technologies</span>
+        <span>Version 1.0.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/setup.js"></script>
+  <script src="js/topbar.js"></script>
+</body>
+</html>

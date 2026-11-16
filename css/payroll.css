@@ -219,11 +219,19 @@ button {
 }
 
 .payroll-actions {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 14px;
   padding: 16px;
   margin-bottom: 20px;
+}
+
+.payroll-actions button {
+  flex: 1 1 170px;
+}
+
+.payroll-actions button[hidden] {
+  display: none;
 }
 
 .payroll-actions button.primary {

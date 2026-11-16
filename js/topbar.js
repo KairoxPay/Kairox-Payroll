@@ -17,6 +17,63 @@
   const BELL =
     '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>';
 
+  const HELP_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.5-2.7 2.5"/><path d="M12 17h.01"/></svg>';
+
+  /* ---------- help for each page ---------- */
+  // The full guide by role. Share it as "anyone with the link" so staff can open it; change the address here if it moves.
+  const GUIDE_URL = "https://claude.ai/artifact/4s1vXFNJkqNGWWGo1ZGRsy";
+  const PAGE_HELP = {
+    "dashboard-v2.html": ["Home shows this pay period, what is due to TAJ, and tasks waiting for you.", "If you see Finish setting up, the Setup checklist lists what is left, in order."],
+    "setup.html": ["Each step ticks itself once the work is saved on its own page.", "Needed steps must be done before the first payroll; optional ones can wait."],
+    "employees-v2.html": ["Add Employee creates the record. Every person needs a monthly salary and a TRN for the S02 and P24.", "Archive someone who has left only after their last payroll: use Leavers first."],
+    "employee-profile.html": ["Payroll jumps to this person's pay history and payslips.", "Edit Employee changes their details; salary changes are recorded in the audit trail."],
+    "edit-employee.html": ["Gross salary is the MONTHLY amount. Weekly and fortnightly pay is worked out from it.", "The TRN must be 9 digits."],
+    "payroll.html": ["Order: set the pay period, open Pay items for overtime, bonuses, loans and expenses, Save Draft, Approve, then Process.", "Someone other than the person who saved it should approve it.", "Made a mistake after processing? Reverse the payroll, fix it, and process again."],
+    "payslip.html": ["Download as PDF gives the employee's payslip with year-to-date figures.", "Payslips can be emailed from Email payslips, or shared on WhatsApp."],
+    "payslips.html": ["Choose a processed payroll to see and download each person's payslip."],
+    "notices.html": ["Pick a processed payroll, then send everyone a \"your payslip is ready\" email. No pay figures are in the email."],
+    "whatsapp.html": ["Send opens WhatsApp with the message typed; press send in WhatsApp.", "Add phone numbers on each employee's profile."],
+    "bank.html": ["Add each person's bank and branch from the lists, and your NCB Originator ID.", "After processing a payroll, Download file gives the NCB ACH file to upload in NCB Business Online Banking.", "Approve a bank change only after phoning the employee on the number on file."],
+    "loans.html": ["Each loan's repayment comes out of every processed payroll until it is paid off.", "Reversing a payroll puts the repayment back."],
+    "reports.html": ["Choose a payroll to see totals, statutory deductions and employer costs.", "Print or export the S01 amounts before filing with TAJ."],
+    "compliance.html": ["S01 is due on the 14th of the next month. Mark each return as filed once it is done.", "Check the statutory rates every April against TAJ's notices.", "S02 and P24s are prepared here at the end of the year."],
+    "leave.html": ["Record leave for someone, or approve requests from My portal.", "Weekends and public holidays are never counted as leave days."],
+    "leavers.html": ["Record the last day, run their final payroll, then prepare the P45."],
+    "people.html": ["Give staff a role (admin, payroll, HR, manager, viewer), and set who each employee reports to.", "An employee with a login sees only their own payslips, leave and details."],
+    "timesheets.html": ["Approve hours before payroll: only approved hours are used.", "Sundays and public holidays are paid at double time."],
+    "expenses.html": ["Approve claims, then add them to payroll from the person's Pay items.", "They are paid free of tax and marked Paid when the payroll is processed."],
+    "onboarding.html": ["Tick items as each new hire's paperwork is done. Green items are already on record."],
+    "documents.html": ["Company documents are private to staff unless you share them to My portal."],
+    "settings.html": ["Company details are printed on payslips and returns.", "My portal: choose what employees can see.", "Email alerts: send payslip and leave emails from your Gmail."],
+    "security.html": ["Turn on two-step sign-in: an app on your phone gives a 6-digit code at sign-in.", "Lost phone? An admin can reset it (see the note on this page)."],
+    "backup.html": ["Download a backup at least once a month and keep it somewhere private."],
+    "me.html": ["Your payslips, leave, details and documents. What you see depends on what your employer has turned on."],
+    "support.html": ["Search the answers, or contact support from the bottom of this page."]
+  };
+
+  function openHelp(page) {
+    const tips = PAGE_HELP[page] || ["Use the menu to move between pages."];
+    const old = document.getElementById("kxHelp"); if (old) old.remove();
+    const back = document.createElement("div");
+    back.id = "kxHelp";
+    back.setAttribute("style", "position:fixed;inset:0;z-index:2000;display:grid;place-items:center;padding:16px;background:rgba(20,10,45,.45)");
+    back.innerHTML = `<div role="dialog" aria-modal="true" aria-labelledby="kxHelpTitle" style="width:min(460px,100%);max-height:85vh;overflow:auto;padding:22px;border-radius:18px;background:#fff;color:#17172f;box-shadow:0 20px 50px rgba(20,10,45,.3);font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+      <h3 id="kxHelpTitle" style="margin:0 0 10px;font-size:20px">Help: ${esc((document.querySelector("h1, h2") || {}).textContent || "this page")}</h3>
+      <ul style="margin:0 0 16px;padding-left:20px;line-height:1.5">${tips.map((t) => `<li style="margin:0 0 6px">${esc(t)}</li>`).join("")}</ul>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a href="support.html" style="padding:9px 14px;border-radius:10px;background:#4b2394;color:#fff;font-weight:700;text-decoration:none">Questions and answers</a>
+        <a href="${GUIDE_URL}" target="_blank" rel="noopener" style="padding:9px 14px;border-radius:10px;border:1px solid #d9d4ea;color:#4b2394;font-weight:700;text-decoration:none">Full user guide</a>
+        <button type="button" data-kx-help-close style="margin-left:auto;padding:9px 14px;border-radius:10px;border:1px solid #e7e9f0;background:#fff;font:inherit;font-weight:700;cursor:pointer">Close</button></div></div>`;
+    document.body.appendChild(back);
+    const close = () => { back.remove(); document.removeEventListener("keydown", onEsc, true); };
+    const onEsc = (event) => { if (event.key === "Escape") close(); };
+    document.addEventListener("keydown", onEsc, true);
+    back.addEventListener("click", (event) => { if (event.target === back || (event.target.closest && event.target.closest("[data-kx-help-close]"))) close(); });
+    back.querySelector("a").focus();
+  }
+
+  const MENU_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+
   let profile = { signedIn: false, name: "", initials: "?", email: "", role: null, metaName: "" };
   let notifications = [];
   let openPanel = null;
@@ -807,7 +864,7 @@
       { items: [item("dashboard-v2.html", "Home", "home")] },
       { title: "People", items: [item("employees-v2.html", "Employees", "users"), item("people.html", "Team & access", "team"), item("leave.html", "Leave", "calendar"), item("timesheets.html", "Timesheets", "clock"), item("expenses.html", "Expenses", "receipt"), item("onboarding.html", "New hires", "checklist"), item("leavers.html", "Leavers", "leaver")] },
       { title: "Pay", items: [item("payroll.html", "Payroll", "payroll"), item("payslips.html", "Payslips", "payslip"), ...(canEmail ? [item("notices.html", "Email payslips", "mail"), item("whatsapp.html", "WhatsApp", "chat"), item("bank.html", "Bank payments", "bank"), item("loans.html", "Loans", "loan")] : []), item("reports.html", "Reports", "chart"), item("compliance.html", "Compliance", "shield")] },
-      { title: "Company", items: [item("documents.html", "Documents", "folder"), item("settings.html", "Settings", "settings"), ...(canEmail ? [item("backup.html", "Backup", "backup")] : []), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }
+      { title: "Company", items: [...(!profile.signedIn || ["admin", "director"].includes(profile.role) ? [item("setup.html", "Setup checklist", "checklist")] : []), item("documents.html", "Documents", "folder"), item("settings.html", "Settings", "settings"), ...(canEmail ? [item("backup.html", "Backup", "backup")] : []), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }
     ];
   }
 
@@ -835,6 +892,8 @@
       .kx-link { display: flex; align-items: center; gap: 12px; min-height: 42px; padding: 9px 12px; border-radius: 11px; color: #eee9f8; font-size: 14px; font-weight: 650;
         line-height: 1.2; text-decoration: none; transition: background .18s ease, color .18s ease; }
       .kx-link:hover { color: #fff; background: rgba(255, 255, 255, .09); }
+      button.kx-link { width: 100%; border: 0; background: none; font-family: inherit; text-align: left; cursor: pointer; }
+      .kx-nav .kx-help { grid-column: 1 / -1; margin-top: 8px; border-top: 1px solid rgba(255, 255, 255, .1); border-radius: 0 0 11px 11px; }
       .kx-link[aria-current="page"] { color: #fff; background: linear-gradient(135deg, rgba(120, 67, 207, .95), rgba(83, 37, 158, .95)); box-shadow: 0 8px 18px rgba(10, 4, 30, .22); }
       .kx-link:focus-visible, .kx-user:focus-visible, .kx-bell:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
       .kx-icon { flex: 0 0 auto; width: 20px; height: 20px; }
@@ -861,12 +920,39 @@
         .kx-brand { padding: 6px; } .kx-sidebar .kx-company, .kx-group, .kx-link span, .kx-user .user-details, .kx-chevron { display: none; }
         .kx-link { justify-content: center; padding: 10px; } .kx-foot { flex-direction: column; } .kx-user { justify-content: center; padding: 8px; }
       }
+      .kx-menu, .kx-bell-dup { display: none; }
+      .kx-menu { align-items: center; gap: 6px; min-height: 40px; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, .28); border-radius: 10px; color: #fff;
+        background: rgba(255, 255, 255, .1); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+      .kx-menu svg { width: 18px; height: 18px; }
+      .kx-menu:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+      /* Phones: a slim bar (logo, company, Menu). The links and the profile and bell open under it. */
       @media (max-width: 620px) {
         .kx-layout { display: block !important; }
-        aside.kx-sidebar { position: static; height: auto; padding: 14px; }
-        .kx-sidebar .kx-company { display: grid; } .kx-link span { display: inline; } .kx-link { justify-content: flex-start; padding: 9px 12px; }
-        .kx-nav { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); overflow: visible; }
-        .kx-foot { display: none; }
+        aside.kx-sidebar { position: sticky; top: 0; z-index: 60; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px;
+          height: auto; max-height: 100vh; padding: 8px 12px; box-shadow: 0 6px 18px rgba(20, 8, 50, .25); }
+        .kx-brand { margin: 0; padding: 4px 8px; border-radius: 10px; } .kx-brand img { width: auto; height: 30px; max-width: 104px; }
+        #kxCompanySlot { min-width: 0; }
+        .kx-sidebar .kx-company { display: block; margin: 0; } .kx-sidebar .kx-company-label { display: none; }
+        .kx-sidebar .kx-company-name { display: block; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+        .kx-sidebar .kx-company select { min-height: 36px; padding: 6px 8px; font-size: 13px; }
+        .kx-menu { display: inline-flex; }
+        .kx-nav, .kx-foot { display: none; grid-column: 1 / -1; }
+        aside.kx-open { overflow-y: auto; }
+        aside.kx-open .kx-nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 6px; overflow: visible; padding: 4px 0 0; }
+        aside.kx-open .kx-group { display: block; grid-column: 1 / -1; margin: 10px 8px 2px; }
+        .topbar { margin-bottom: 16px; }
+        .kx-link span { display: inline; } .kx-link { justify-content: flex-start; min-height: 40px; padding: 8px 10px; }
+        aside.kx-open .kx-foot { display: flex; flex-direction: row; margin-top: 6px; }
+        .kx-user .user-details, .kx-chevron { display: grid; }
+        .kx-bell-dup { display: grid; }
+        .topbar-actions .notification-button, .topbar-actions .topbar-avatar { display: none !important; }
+        .topbar-actions:not(:has(input, select, button:not(.notification-button), a)) { display: none; }
+        /* Number cards two to a row, so the page content starts sooner. */
+        .stat-grid, .summary-grid, .reports-summary-grid, .payroll-summary-grid, .employee-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px !important; }
+        .stat-grid > *, .summary-grid > *, .reports-summary-grid > *, .payroll-summary-grid > *, .employee-summary-grid > * { min-width: 0; padding: 14px !important; }
+        .stat-grid h3, .stat-grid strong, .summary-grid h3, .reports-summary-grid h3, .reports-summary-grid strong, .payroll-summary-grid h3, .payroll-summary-grid strong,
+        .employee-summary-grid h3, .employee-summary-grid strong { font-size: 20px !important; overflow-wrap: anywhere; }
+        .summary-grid .summary-card { display: block !important; } .summary-grid .summary-icon { width: 34px !important; height: 34px !important; margin-bottom: 8px; }
       }
       @media print { aside.kx-sidebar { display: none !important; } .kx-layout { display: block !important; } }
     `;
@@ -907,17 +993,28 @@
       aside.innerHTML =
         `<a class="kx-brand" href="${home}" aria-label="Kairox Pay"><img src="assets/images/kairox-pay-logo.png" alt="Kairox Pay"></a>` +
         '<div id="kxCompanySlot"></div>' +
-        `<nav class="kx-nav" aria-label="Main">${links}</nav>` +
+        `<button type="button" class="kx-menu" aria-expanded="false" aria-controls="kxNav">${MENU_ICON}<span>Menu</span></button>` +
+        `<nav class="kx-nav" id="kxNav" aria-label="Main">${links}<button type="button" class="kx-link kx-help" aria-haspopup="dialog" title="Help for this page">${HELP_ICON.replace('width="22" height="22"', 'class="kx-icon"')}<span>Help</span></button></nav>` +
         '<div class="kx-foot">' +
         `<button type="button" class="kx-user" aria-haspopup="dialog" aria-expanded="false"><span class="user-avatar kx-avatar">${esc(profile.initials || "?")}</span>` +
         `<span class="user-details"><strong>${esc(profile.signedIn ? profile.name : "Not signed in")}</strong><span>${esc(roleText)}</span></span>${sidebarIcon("chevron", "kx-chevron")}</button>` +
-        (hasTopbarBell ? "" : `<button type="button" class="kx-bell" aria-haspopup="dialog" aria-expanded="false" aria-label="Notifications">${BELL}<span class="notification-count" hidden>0</span></button>`) +
+        // The page's own bell is hidden on phones, so the sidebar always has one (only shown on phones when the page has its own).
+        `<button type="button" class="kx-bell${hasTopbarBell ? " kx-bell-dup" : ""}" aria-haspopup="dialog" aria-expanded="false" aria-label="Notifications">${BELL}<span class="notification-count" hidden>0</span></button>` +
         "</div>";
 
       if (aside.parentElement) aside.parentElement.classList.add("kx-layout");
 
+      const menu = aside.querySelector(".kx-menu");
+      menu.addEventListener("click", () => {
+        const open = aside.classList.toggle("kx-open");
+        menu.setAttribute("aria-expanded", String(open));
+        menu.querySelector("span").textContent = open ? "Close" : "Menu";
+      });
+      aside.addEventListener("keydown", (event) => { if (event.key === "Escape" && aside.classList.contains("kx-open")) { menu.click(); menu.focus(); } });
+
       const card = aside.querySelector(".kx-user");
       makeInteractive(card, "Open your profile menu", openProfileMenu);
+      aside.querySelector(".kx-help").addEventListener("click", () => openHelp(here));
       const bell = aside.querySelector(".kx-bell");
       if (bell) makeInteractive(bell, "Notifications", (el) => showPanel(el, "Notifications", notificationsHtml()));
 
@@ -933,7 +1030,7 @@
   // database, which refuses them the data whatever the page does.
   const APP_PAGES = [
     "dashboard-v2.html", "employees-v2.html", "employee-profile.html", "edit-employee.html", "add-employee.html", "payroll.html", "payslips.html",
-    "payslip.html", "notices.html", "bank.html", "compliance.html", "reports.html", "documents.html", "settings.html", "leave.html", "leavers.html", "people.html", "me.html", "support.html", "security.html", "onboarding.html", "backup.html", "loans.html", "timesheets.html", "expenses.html", "whatsapp.html"
+    "payslip.html", "notices.html", "bank.html", "compliance.html", "reports.html", "documents.html", "settings.html", "leave.html", "leavers.html", "people.html", "me.html", "support.html", "security.html", "onboarding.html", "backup.html", "loans.html", "timesheets.html", "expenses.html", "whatsapp.html", "setup.html"
   ];
   const ROLE_PAGES = {
     hr: ["people.html", "leave.html", "documents.html", "support.html", "me.html", "security.html", "onboarding.html", "timesheets.html", "expenses.html", "whatsapp.html"],
@@ -1117,4 +1214,18 @@
     document.addEventListener("visibilitychange", () => { if (!document.hidden) check(); });
     ticking = setInterval(check, 1000);
   } catch (error) { /* the automatic sign-out is a safety extra; the page works without it */ }
+})();
+// Links such as settings.html#emailCard: many cards stay hidden until their data loads, so the browser cannot jump to them at
+// first. Wait (up to 6 seconds) for the card to appear, then scroll to it.
+(function () {
+  try {
+    const id = decodeURIComponent((window.location.hash || "").slice(1));
+    if (!id || !/^[\w-]+$/.test(id)) return;
+    let tries = 0;
+    const timer = setInterval(() => {
+      const el = document.getElementById(id);
+      if (el && !el.hidden && el.offsetParent !== null) { el.scrollIntoView({ behavior: "smooth", block: "start" }); clearInterval(timer); }
+      if (++tries > 24) clearInterval(timer);
+    }, 250);
+  } catch (error) { /* only a convenience */ }
 })();
