@@ -19,6 +19,7 @@
   // right colours without a flash, then refreshed from the database.
   const BRAND_KEY = () => `kairoxBrand:${workspaceId()}`;
   let brand = null;
+  let isOwner = (() => { try { return localStorage.getItem("kairoxOwner") === "1"; } catch (e) { return false; } })();
 
   const hexRgb = (h) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(h || "")); if (!m) return null; const n = parseInt(m[1], 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
   const rgbHex = (c) => `#${c.map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("")}`;
@@ -113,6 +114,7 @@
     "documents.html": ["Company documents are private to staff unless you share them to My portal."],
     "settings.html": ["Company details are printed on payslips and returns.", "My portal: choose what employees can see.", "Email alerts: send payslip and leave emails from your Gmail."],
     "security.html": ["Turn on two-step sign-in: an app on your phone gives a 6-digit code at sign-in.", "Lost phone? An admin can reset it (see the note on this page)."],
+    "companies.html": ["New company creates an empty company for a customer; invite their admin with their email.", "Open to help gives you admin access to a customer's company; it is written in their audit trail. Remove my access when you are done.", "Invitation emails need the invite-user Supabase function (set up once); without it, invite the person in Supabase and their role is applied automatically."],
     "reviews.html": ["Start reviews for one or many people, with the skills and goals to rate from 1 to 5.", "With self-review on, each person rates themselves first in My portal; you then rate, write a summary and share it.", "Once shared, a review cannot be changed. Print gives a copy with space for signatures."],
     "announcements.html": ["Post to everyone or one department. Attach a document from the Documents page if staff must read it.", "Tick \"Ask each person to confirm\" to get a dated record that each person read it.", "To change an announcement, archive it and post a new one, so confirmations always match the words people saw."],
     "costs.html": ["Employer cost is gross pay plus non-taxable pay plus the company's NIS, NHT, Education Tax and HEART.", "Only processed payrolls are counted, by the month they were paid.", "The percentage under each figure compares with the same length of time just before."],
@@ -275,6 +277,11 @@
 
       company.role = role.data || null;
       loadBrand();
+      supabaseClient.rpc("is_platform_owner").then(({ data: own, error: ownErr }) => {
+        const v = !ownErr && own === true;
+        try { if (v) localStorage.setItem("kairoxOwner", "1"); else localStorage.removeItem("kairoxOwner"); } catch (e) { /* ignore */ }
+        if (v !== isOwner) { isOwner = v; renderSidebar(); }
+      });
       if (profile.data) company.profile = profile.data;
 
       // An employee cannot read the company profile table: their company's name and logo come with their own record.
@@ -883,6 +890,7 @@
   // from the person's role, and replaces whatever the page had. The page's content is not touched.
   const SIDEBAR_ICONS = {
     clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+    building: '<path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16"/><path d="M15 9h4a1 1 0 0 1 1 1v11"/><path d="M8 8h3M8 12h3M8 16h3M3 21h18"/>',
     star: '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z"/>',
     megaphone: '<path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1Z"/><path d="M16 9a3 3 0 0 1 0 6"/><path d="M19 6a7 7 0 0 1 0 12"/>',
     trend: '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
@@ -938,7 +946,7 @@
       { items: [item("dashboard-v2.html", "Home", "home")] },
       { title: "People", items: [item("employees-v2.html", "Employees", "users"), item("people.html", "Team & access", "team"), item("leave.html", "Leave", "calendar"), item("timesheets.html", "Timesheets", "clock"), item("expenses.html", "Expenses", "receipt"), item("onboarding.html", "New hires", "checklist"), item("leavers.html", "Leavers", "leaver"), ...(canEmail ? [item("announcements.html", "Announcements", "megaphone")] : []), ...(!profile.signedIn || ["admin", "director"].includes(profile.role) ? [item("reviews.html", "Reviews", "star")] : [])] },
       { title: "Pay", items: [item("payroll.html", "Payroll", "payroll"), item("payslips.html", "Payslips", "payslip"), ...(canEmail ? [item("notices.html", "Email payslips", "mail"), item("whatsapp.html", "WhatsApp", "chat"), item("bank.html", "Bank payments", "bank"), item("loans.html", "Loans", "loan")] : []), item("reports.html", "Reports", "chart"), item("costs.html", "Payroll costs", "trend"), item("compliance.html", "Compliance", "shield")] },
-      { title: "Company", items: [...(!profile.signedIn || ["admin", "director"].includes(profile.role) ? [item("setup.html", "Setup checklist", "checklist")] : []), item("documents.html", "Documents", "folder"), item("settings.html", "Settings", "settings"), ...(canEmail ? [item("backup.html", "Backup", "backup")] : []), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }
+      { title: "Company", items: [...(isOwner ? [item("companies.html", "Companies", "building")] : []), ...(!profile.signedIn || ["admin", "director"].includes(profile.role) ? [item("setup.html", "Setup checklist", "checklist")] : []), item("documents.html", "Documents", "folder"), item("settings.html", "Settings", "settings"), ...(canEmail ? [item("backup.html", "Backup", "backup")] : []), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }
     ];
   }
 
@@ -1051,7 +1059,7 @@
       // Only people who can process payroll see "Email payslips" (shown to staff until the role has loaded).
       const canEmail = !profile.signedIn || ["admin", "director", "payroll"].includes(profile.role);
       const ownLogo = brand && brand.menuLogo ? companyLogo() : null;
-      const key = [kind, hasPortal, current, roleText, hasTopbarBell, canEmail, ownLogo ? ownLogo.length : 0, brand ? brand.primary : ""].join("|");
+      const key = [kind, hasPortal, current, roleText, hasTopbarBell, canEmail, isOwner, ownLogo ? ownLogo.length : 0, brand ? brand.primary : ""].join("|");
 
       if (aside.classList.contains("kx-sidebar") && aside.dataset.kxKey === key) return;
 
@@ -1110,7 +1118,7 @@
   // database, which refuses them the data whatever the page does.
   const APP_PAGES = [
     "dashboard-v2.html", "employees-v2.html", "employee-profile.html", "edit-employee.html", "add-employee.html", "payroll.html", "payslips.html",
-    "payslip.html", "notices.html", "bank.html", "compliance.html", "reports.html", "documents.html", "settings.html", "leave.html", "leavers.html", "people.html", "me.html", "support.html", "security.html", "onboarding.html", "backup.html", "loans.html", "timesheets.html", "expenses.html", "whatsapp.html", "setup.html", "costs.html", "announcements.html", "reviews.html"
+    "payslip.html", "notices.html", "bank.html", "compliance.html", "reports.html", "documents.html", "settings.html", "leave.html", "leavers.html", "people.html", "me.html", "support.html", "security.html", "onboarding.html", "backup.html", "loans.html", "timesheets.html", "expenses.html", "whatsapp.html", "setup.html", "costs.html", "announcements.html", "reviews.html", "companies.html"
   ];
   const ROLE_PAGES = {
     hr: ["people.html", "leave.html", "documents.html", "support.html", "me.html", "security.html", "onboarding.html", "timesheets.html", "expenses.html", "whatsapp.html", "announcements.html", "reviews.html"],

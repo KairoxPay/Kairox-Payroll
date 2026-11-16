@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | Companies</title>
+  <link rel="stylesheet" href="css/dashboard-v2.css">
+  <link rel="stylesheet" href="css/app-pages.css">
+  <style>.cp-check { display: flex; gap: 8px; align-items: center; margin: 12px 0 14px; } .cp-check input { width: 18px; height: 18px; margin: 0; }</style>
+</head>
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <!-- Replaced by the standard sidebar from js/topbar.js. These links only show if that script cannot load. -->
+      <div class="brand"><div class="brand-mark">K</div><div><h1>KAIROX</h1><p>Payroll</p></div></div>
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="dashboard-v2.html"><span>Home</span></a>
+        <a class="nav-item active" href="companies.html" aria-current="page"><span>Companies</span></a>
+      </nav>
+    </aside>
+
+    <main class="dashboard-main">
+      <div id="pageBanner" class="page-banner" hidden></div>
+
+      <header class="topbar">
+        <div>
+          <h2>Companies</h2>
+          <p>Create a company for a new customer, invite their admin, and see how each company is getting on. Only you (the Kairox Pay owner) see this page.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="notification-button" aria-label="Notifications">♢<span class="notification-count">0</span></button>
+          <div class="topbar-avatar">?</div>
+        </div>
+      </header>
+
+      <div id="cpMsg" class="form-message" role="status" style="margin:0 0 14px"></div>
+
+      <section class="page-card">
+        <div class="page-card-head"><div><h3>New company</h3><p>Creates an empty company with its own employees, payroll, settings and colours. Nothing is shared with your other companies.</p></div>
+          <button type="button" class="btn primary" id="cpToggle">New company</button></div>
+        <form id="cpForm" hidden>
+          <div class="form-grid">
+            <div class="field"><label for="cpName">Company name (as people know it)</label><input id="cpName" maxlength="80" placeholder="For example: Blue Mountain Tours"></div>
+            <div class="field"><label for="cpLegal">Legal name (if different)</label><input id="cpLegal" maxlength="150" placeholder="For example: Blue Mountain Tours Limited"></div>
+            <div class="field"><label for="cpTrn">Employer TRN (optional for now)</label><input id="cpTrn" inputmode="numeric" maxlength="9"></div>
+            <div class="field"><label for="cpParish">Parish</label><select id="cpParish"><option value="">Choose</option><option>Kingston</option><option>St. Andrew</option><option>St. Thomas</option><option>Portland</option><option>St. Mary</option><option>St. Ann</option><option>Trelawny</option><option>St. James</option><option>Hanover</option><option>Westmoreland</option><option>St. Elizabeth</option><option>Manchester</option><option>Clarendon</option><option>St. Catherine</option></select></div>
+            <div class="field"><label for="cpAdmin">Their admin's email (optional)</label><input id="cpAdmin" type="email" maxlength="120" placeholder="The person who will run their payroll"></div>
+          </div>
+          <label class="cp-check"><input type="checkbox" id="cpJoin" checked> Give me admin access too, so I can help set it up (you can remove it later)</label>
+          <button type="submit" class="btn primary" id="cpCreate">Create company</button>
+        </form>
+      </section>
+
+      <section class="page-card">
+        <div class="page-card-head"><div><h3>Companies</h3><p>Every company on your Kairox Pay. Opening a customer's company to help them is recorded in that company's audit trail.</p></div></div>
+        <div class="table-wrap"><table class="data"><thead><tr><th>Company</th><th class="num">Employees</th><th class="num">People with access</th><th>Last payroll</th><th>Your access</th><th></th></tr></thead>
+          <tbody id="cpBody"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody></table></div>
+      </section>
+
+      <div class="dialog-backdrop" id="cpDialog" hidden>
+        <div class="dialog" id="cpBox" role="dialog" aria-modal="true" aria-labelledby="cpDlgTitle" style="width:min(560px,100%)"></div>
+      </div>
+
+      <footer class="dashboard-footer">
+        <span>© 2026 Kairox Technologies</span>
+        <span>Version 1.0.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/companies.js"></script>
+  <script src="js/topbar.js"></script>
+</body>
+</html>
