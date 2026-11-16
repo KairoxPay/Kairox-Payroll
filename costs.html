@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | Payroll costs</title>
+  <link rel="stylesheet" href="css/dashboard-v2.css">
+  <link rel="stylesheet" href="css/app-pages.css">
+  <style>
+    .co-head { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .co-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 0 0 18px; }
+    .co-tile { display: grid; gap: 4px; align-content: start; margin: 0 !important; }
+    .co-tile span { color: #5f6475; font-size: 14px; font-weight: 600; }
+    .co-tile strong { font-size: 28px; letter-spacing: -0.02em; color: #17172f; }
+    .co-tile small { color: #5f6475; font-size: 13px; }
+    .co-tile .co-change { color: #3b3d52; font-weight: 700; }
+    .co-chart { position: relative; height: 340px; }
+    .co-details { margin-top: 14px; } .co-details summary { cursor: pointer; font-weight: 700; color: #4b2394; }
+    .co-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .co-bar { height: 8px; margin-top: 6px; border-radius: 999px; background: #f0eef7; overflow: hidden; }
+    .co-bar span { display: block; height: 100%; border-radius: 0 4px 4px 0; background: #7445c4; }
+    .co-total td { border-top: 2px solid #e7e9f0; font-weight: 700; }
+    @media (max-width: 1100px) { .co-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .co-two { grid-template-columns: 1fr; } }
+    @media (max-width: 620px) { .co-tile strong { font-size: 21px; } .co-chart { height: 280px; } .co-tiles { gap: 10px; } }
+  </style>
+</head>
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <!-- Replaced by the standard sidebar from js/topbar.js. These links only show if that script cannot load. -->
+      <div class="brand"><div class="brand-mark">K</div><div><h1>KAIROX</h1><p>Payroll</p></div></div>
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="dashboard-v2.html"><span>Home</span></a>
+        <a class="nav-item active" href="costs.html" aria-current="page"><span>Payroll costs</span></a>
+      </nav>
+    </aside>
+
+    <main class="dashboard-main">
+      <div id="pageBanner" class="page-banner" hidden></div>
+
+      <header class="topbar">
+        <div>
+          <h2>Payroll costs</h2>
+          <p>What your staff cost the company each month: pay, overtime, non-taxable pay and the company's statutory contributions.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="notification-button" aria-label="Notifications">♢<span class="notification-count">0</span></button>
+          <div class="topbar-avatar">?</div>
+        </div>
+      </header>
+
+      <section class="page-card co-head">
+        <p id="coSub" class="muted" style="margin:0">Loading…</p>
+        <div class="row-actions" style="flex-wrap:wrap">
+          <label for="coRange" class="muted small" style="font-weight:700">Period</label>
+          <select id="coRange"><option value="12">Last 12 months</option><option value="6">Last 6 months</option><option value="year">This year</option><option value="lastyear">Last year</option></select>
+          <button type="button" class="btn small" id="coCsv">Export CSV</button>
+        </div>
+      </section>
+
+      <div class="co-tiles" id="coTiles"></div>
+
+      <section class="page-card">
+        <div class="page-card-head"><div><h3>Employer cost by month</h3><p>From processed payrolls, by the month they were paid. Hover or tap a month for its figures.</p></div></div>
+        <div class="co-chart"><canvas id="coChart" role="img" aria-label="Stacked bar chart of employer cost by month. The same figures are in the table below."></canvas>
+          <p id="coChartEmpty" class="muted" hidden>No processed payrolls in this period.</p></div>
+        <details class="co-details"><summary>Show as a table</summary>
+          <div class="table-wrap"><table class="data"><thead><tr><th>Month</th><th class="num">People</th><th class="num">Basic and other pay</th><th class="num">Overtime and bonuses</th>
+            <th class="num">Non-taxable pay</th><th class="num">Employer contributions</th><th class="num">Total cost</th></tr></thead><tbody id="coMonths"></tbody></table></div></details>
+      </section>
+
+      <div class="co-two">
+        <section class="page-card">
+          <div class="page-card-head"><div><h3>By department</h3><p>Total employer cost for each department in this period.</p></div></div>
+          <div class="table-wrap"><table class="data"><thead><tr><th>Department</th><th class="num">People</th><th class="num">Cost</th><th class="num">Share</th><th class="num">Overtime</th></tr></thead>
+            <tbody id="coDepts"></tbody></table></div>
+        </section>
+        <section class="page-card">
+          <div class="page-card-head"><div><h3>Statutory deductions and contributions</h3><p>What went to TAJ in this period: the employees' part (taken from their pay) and the company's part.</p></div></div>
+          <div class="table-wrap"><table class="data"><thead><tr><th>Item</th><th class="num">Employees</th><th class="num">Company</th><th class="num">Total</th></tr></thead>
+            <tbody id="coStat"></tbody></table></div>
+        </section>
+      </div>
+
+      <footer class="dashboard-footer">
+        <span>© 2026 Kairox Technologies</span>
+        <span>Version 1.0.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="js/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.6.1/dist/chart.umd.min.js"></script>
+  <script src="js/costs.js"></script>
+  <script src="js/topbar.js"></script>
+</body>
+</html>
