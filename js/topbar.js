@@ -143,6 +143,7 @@
   const BELL =
     '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>';
 
+  const SIGNOUT_ICON = '<svg class="kx-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5"/><path d="M5 12h11"/></svg>';
   const HELP_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.5-2.7 2.5"/><path d="M12 17h.01"/></svg>';
 
   /* ---------- help for each page ---------- */
@@ -1038,6 +1039,7 @@
       .kx-powered { flex: 0 0 auto; margin: 10px 0 0; color: rgba(255, 255, 255, .6); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-align: center; }
       .kx-brand img { max-height: 72px; object-fit: contain; }
       button.kx-link { width: 100%; border: 0; background: none; font-family: inherit; text-align: left; cursor: pointer; }
+      .kx-nav .kx-signout { grid-column: 1 / -1; }
       .kx-nav .kx-help { grid-column: 1 / -1; margin-top: 8px; border-top: 1px solid rgba(255, 255, 255, .1); border-radius: 0 0 11px 11px; }
       .kx-link[aria-current="page"] { color: #fff; background: linear-gradient(135deg, rgba(120, 67, 207, .95), rgba(83, 37, 158, .95)); box-shadow: 0 8px 18px rgba(10, 4, 30, .22); }
       .kx-link:focus-visible, .kx-user:focus-visible, .kx-bell:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
@@ -1120,7 +1122,7 @@
       // Only people who can process payroll see "Email payslips" (shown to staff until the role has loaded).
       const canEmail = !profile.signedIn || ["admin", "director", "payroll"].includes(profile.role);
       const ownLogo = brand && brand.menuLogo ? companyLogo() : null;
-      const key = [kind, hasPortal, current, roleText, hasTopbarBell, canEmail, isOwner, featuresOff.join(","), ownLogo ? ownLogo.length : 0, brand ? brand.primary : ""].join("|");
+      const key = [kind, hasPortal, current, roleText, profile.signedIn, hasTopbarBell, canEmail, isOwner, featuresOff.join(","), ownLogo ? ownLogo.length : 0, brand ? brand.primary : ""].join("|");
 
       if (aside.classList.contains("kx-sidebar") && aside.dataset.kxKey === key) return;
 
@@ -1144,7 +1146,7 @@
           : `<a class="kx-brand" href="${home}" aria-label="Kairox Pay"><img src="assets/images/kairox-pay-logo.png" alt="Kairox Pay"></a>`) +
         '<div id="kxCompanySlot"></div>' +
         `<button type="button" class="kx-menu" aria-expanded="false" aria-controls="kxNav">${MENU_ICON}<span>Menu</span></button>` +
-        `<nav class="kx-nav" id="kxNav" aria-label="Main">${links}<button type="button" class="kx-link kx-help" aria-haspopup="dialog" title="Help for this page">${HELP_ICON.replace('width="22" height="22"', 'class="kx-icon"')}<span>Help</span></button></nav>` +
+        `<nav class="kx-nav" id="kxNav" aria-label="Main">${links}<button type="button" class="kx-link kx-help" aria-haspopup="dialog" title="Help for this page">${HELP_ICON.replace('width="22" height="22"', 'class="kx-icon"')}<span>Help</span></button>${profile.signedIn ? `<button type="button" class="kx-link kx-signout" title="Sign out of Kairox Pay">${SIGNOUT_ICON}<span>Sign out</span></button>` : ""}</nav>` +
         (brand ? '<div class="kx-powered">Powered by Kairox Pay</div>' : "") +
         '<div class="kx-foot">' +
         `<button type="button" class="kx-user" aria-haspopup="dialog" aria-expanded="false"><span class="user-avatar kx-avatar">${esc(profile.initials || "?")}</span>` +
@@ -1166,6 +1168,8 @@
       const card = aside.querySelector(".kx-user");
       makeInteractive(card, "Open your profile menu", openProfileMenu);
       aside.querySelector(".kx-help").addEventListener("click", () => openHelp(here));
+      const out = aside.querySelector(".kx-signout");
+      if (out) out.addEventListener("click", () => signOut());
       const bell = aside.querySelector(".kx-bell");
       if (bell) makeInteractive(bell, "Notifications", (el) => showPanel(el, "Notifications", notificationsHtml()));
 
