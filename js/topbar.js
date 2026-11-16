@@ -754,6 +754,7 @@
   // Every page used to carry its own sidebar, written and styled differently. This builds the same one everywhere,
   // from the person's role, and replaces whatever the page had. The page's content is not touched.
   const SIDEBAR_ICONS = {
+    clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
     loan: '<circle cx="12" cy="12" r="8.5"/><path d="M14.5 9.2c-.6-.8-1.5-1.2-2.5-1.2-1.4 0-2.5.8-2.5 2s1.1 1.7 2.5 2 2.5.8 2.5 2-1.1 2-2.5 2c-1 0-1.9-.4-2.5-1.2M12 6.5V8m0 8v1.5"/>',
     backup: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
     checklist: '<path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 1.5 1.5L7.5 5M3.5 12l1.5 1.5L7.5 11M3.5 18l1.5 1.5L7.5 17"/>',
@@ -794,15 +795,15 @@
       return [{ items: [item("me.html", "My portal", "portal"), item("security.html", "Account security", "lock"), item("support.html", "Support", "help")] }];
     }
     if (kind === "hr") {
-      return [{ items: [item("people.html", "People", "team"), item("leave.html", "Leave", "calendar"), item("onboarding.html", "New hires", "checklist"), item("documents.html", "Documents", "folder"), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }];
+      return [{ items: [item("people.html", "People", "team"), item("leave.html", "Leave", "calendar"), item("timesheets.html", "Timesheets", "clock"), item("onboarding.html", "New hires", "checklist"), item("documents.html", "Documents", "folder"), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }];
     }
     if (kind === "manager") {
-      return [{ items: [item("people.html", "My team", "team"), item("leave.html", "Leave", "calendar"), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }];
+      return [{ items: [item("people.html", "My team", "team"), item("leave.html", "Leave", "calendar"), item("timesheets.html", "Timesheets", "clock"), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }];
     }
 
     return [
       { items: [item("dashboard-v2.html", "Home", "home")] },
-      { title: "People", items: [item("employees-v2.html", "Employees", "users"), item("people.html", "Team & access", "team"), item("leave.html", "Leave", "calendar"), item("onboarding.html", "New hires", "checklist"), item("leavers.html", "Leavers", "leaver")] },
+      { title: "People", items: [item("employees-v2.html", "Employees", "users"), item("people.html", "Team & access", "team"), item("leave.html", "Leave", "calendar"), item("timesheets.html", "Timesheets", "clock"), item("onboarding.html", "New hires", "checklist"), item("leavers.html", "Leavers", "leaver")] },
       { title: "Pay", items: [item("payroll.html", "Payroll", "payroll"), item("payslips.html", "Payslips", "payslip"), ...(canEmail ? [item("notices.html", "Email payslips", "mail"), item("bank.html", "Bank payments", "bank"), item("loans.html", "Loans", "loan")] : []), item("reports.html", "Reports", "chart"), item("compliance.html", "Compliance", "shield")] },
       { title: "Company", items: [item("documents.html", "Documents", "folder"), item("settings.html", "Settings", "settings"), ...(canEmail ? [item("backup.html", "Backup", "backup")] : []), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }
     ];
@@ -930,11 +931,11 @@
   // database, which refuses them the data whatever the page does.
   const APP_PAGES = [
     "dashboard-v2.html", "employees-v2.html", "employee-profile.html", "edit-employee.html", "add-employee.html", "payroll.html", "payslips.html",
-    "payslip.html", "notices.html", "bank.html", "compliance.html", "reports.html", "documents.html", "settings.html", "leave.html", "leavers.html", "people.html", "me.html", "support.html", "security.html", "onboarding.html", "backup.html", "loans.html"
+    "payslip.html", "notices.html", "bank.html", "compliance.html", "reports.html", "documents.html", "settings.html", "leave.html", "leavers.html", "people.html", "me.html", "support.html", "security.html", "onboarding.html", "backup.html", "loans.html", "timesheets.html"
   ];
   const ROLE_PAGES = {
-    hr: ["people.html", "leave.html", "documents.html", "support.html", "me.html", "security.html", "onboarding.html"],
-    manager: ["people.html", "leave.html", "support.html", "me.html", "security.html"],
+    hr: ["people.html", "leave.html", "documents.html", "support.html", "me.html", "security.html", "onboarding.html", "timesheets.html"],
+    manager: ["people.html", "leave.html", "support.html", "me.html", "security.html", "timesheets.html"],
     employee: ["me.html", "support.html", "security.html"]
   };
 
@@ -1039,4 +1040,79 @@
       window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
     }
   } catch (error) { /* installing is optional */ }
+})();
+
+
+/* ---------- automatic sign-out after 30 minutes without activity ----------
+   A warning appears 2 minutes before, with "Stay signed in". Activity in any Kairox Pay tab counts for all of them
+   (they share the time of the last activity), and signing out happens in every tab. */
+(function () {
+  try {
+    if (typeof window === "undefined" || typeof document === "undefined" || /jsdom/i.test(navigator.userAgent || "")) return;
+    if (/login\.html$|set-password\.html$|offline\.html$/i.test(window.location.pathname)) return;
+
+    const LIMIT = 30 * 60 * 1000;   // signed out after this long with no activity
+    const WARN = 2 * 60 * 1000;     // warning shown this long before
+    const KEY = "kairoxLastActive";
+    let box = null;
+    let ticking = null;
+    let lastWrite = 0;
+    let signingOut = false;
+
+    const readLast = () => { try { return Number(localStorage.getItem(KEY)) || Date.now(); } catch (e) { return Date.now(); } };
+    const writeLast = (t) => { try { localStorage.setItem(KEY, String(t)); } catch (e) { /* storage blocked: this tab only */ } };
+
+    function activity() {
+      if (signingOut) return;
+      const now = Date.now();
+      if (now - lastWrite > 15000) { writeLast(now); lastWrite = now; }   // at most every 15 seconds
+      if (box) hideWarning();
+    }
+
+    function showWarning(msLeft) {
+      if (!box) {
+        box = document.createElement("div");
+        box.setAttribute("role", "alertdialog");
+        box.setAttribute("aria-live", "assertive");
+        box.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;background:#24123f;color:#fff;" +
+          "padding:14px 18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);display:flex;gap:14px;align-items:center;flex-wrap:wrap;max-width:calc(100% - 32px);font:14px/1.4 Arial,Helvetica,sans-serif";
+        box.innerHTML = '<span id="kxIdleText"></span><button type="button" id="kxIdleStay" style="font:inherit;font-weight:700;padding:8px 14px;border:0;border-radius:8px;background:#16a6a1;color:#fff;cursor:pointer">Stay signed in</button>';
+        document.body.appendChild(box);
+        box.querySelector("#kxIdleStay").addEventListener("click", () => { writeLast(Date.now()); lastWrite = Date.now(); hideWarning(); });
+      }
+      const s = Math.max(0, Math.ceil(msLeft / 1000));
+      box.querySelector("#kxIdleText").textContent = `For your security you will be signed out in ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")} because nothing has happened for a while.`;
+    }
+
+    function hideWarning() { if (box) { box.remove(); box = null; } }
+
+    async function signOutNow() {
+      if (signingOut) return;
+      signingOut = true;
+      const page = window.location.pathname.split("/").pop() || "dashboard-v2.html";
+      try { if (typeof supabaseClient !== "undefined") await supabaseClient.auth.signOut(); } catch (e) { /* sign-out still continues */ }
+      window.location.replace(`login.html?reason=idle&next=${encodeURIComponent(/^[a-z0-9-]+\.html$/i.test(page) ? page : "dashboard-v2.html")}`);
+    }
+
+    async function check() {
+      if (signingOut || typeof supabaseClient === "undefined") return;
+      const idle = Date.now() - readLast();
+      if (idle >= LIMIT) {
+        const { data } = await supabaseClient.auth.getSession();
+        if (data && data.session) signOutNow(); else hideWarning();
+      } else if (idle >= LIMIT - WARN) {
+        showWarning(LIMIT - idle);
+      } else {
+        hideWarning();
+      }
+    }
+
+    writeLast(Date.now());
+    ["mousedown", "keydown", "scroll", "touchstart", "wheel"].forEach((ev) => window.addEventListener(ev, activity, { passive: true }));
+    let lastMove = 0;
+    window.addEventListener("mousemove", () => { const t = Date.now(); if (t - lastMove > 5000) { lastMove = t; activity(); } }, { passive: true });
+    window.addEventListener("storage", (e) => { if (e.key === KEY) check(); });
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) check(); });
+    ticking = setInterval(check, 1000);
+  } catch (error) { /* the automatic sign-out is a safety extra; the page works without it */ }
 })();

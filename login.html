@@ -370,6 +370,11 @@
       window.location.href = await loginTarget();
     }
 
+    // Shown after the automatic sign-out
+    if (new URLSearchParams(window.location.search).get("reason") === "idle") {
+      showLoginMessage("You were signed out after 30 minutes without activity. Sign in again to continue.", "ok");
+    }
+
     async function redirectIfSignedIn() {
       const { data } = await supabaseClient.auth.getSession();
 

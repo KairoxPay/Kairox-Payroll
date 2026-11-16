@@ -1540,6 +1540,10 @@ function openPayItemsDialog(employeeId) {
         ${payItemField("pi_week_hours", "Normal hours per week", inputs.weeklyHours, { step: "0.5", min: "1" })}
       </div>
       <p id="pi_ot_rate" style="margin:4px 0 8px;font-size:13px;color:#6f7285"></p>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 8px">
+        <button type="button" id="pi_use_hours" class="btn small">Use approved timesheet hours</button>
+        <span id="pi_hours_note" style="font-size:13px;color:#6f7285"></span>
+      </div>
     </fieldset>
     <div class="pay-items-grid">
       ${payItemField("pi_overtime", "Overtime pay (J$)", inputs.overtime)}
@@ -1617,6 +1621,30 @@ function openPayItemsDialog(employeeId) {
   };
 
   modal.addEventListener("input", (event) => { refreshOvertime(event); refreshPreview(); });
+
+  // Fill the overtime hours from the employee's APPROVED timesheet for this pay period (phase37 Timesheets).
+  modal.querySelector("#pi_use_hours").addEventListener("click", async () => {
+    const note = modal.querySelector("#pi_hours_note");
+    const start = localStorage.getItem("kairoxPayrollPeriodStart");
+    const end = localStorage.getItem("kairoxPayrollPeriodEnd");
+    if (!start || !end) { note.textContent = "Set the pay period first."; return; }
+    note.textContent = "Reading timesheets…";
+    const { data, error } = await supabaseClient.rpc("timesheet_hours", {
+      p_workspace: (window.KairoxCompany && window.KairoxCompany.workspace && window.KairoxCompany.workspace()) || localStorage.getItem("kairoxWorkspace"),
+      p_employee: employee.id, p_from: start, p_to: end, p_weekly_hours: payrollNumber(modal.querySelector("#pi_week_hours").value) || 40
+    });
+    if (error) {
+      note.textContent = /could not find the function/i.test(error.message || "") ? "Timesheets are not set up yet." : (error.message || "Hours could not be read.");
+      return;
+    }
+    const h = (data && data[0]) || {};
+    if (!Number(h.entries)) { note.textContent = "No approved hours in this pay period."; return; }
+    modal.querySelector("#pi_ot_hours").value = Number(h.overtime_hours || 0);
+    modal.querySelector("#pi_hol_hours").value = Number(h.double_hours || 0);
+    modal.querySelector("#pi_ot_hours").dispatchEvent(new Event("input", { bubbles: true }));
+    note.textContent = `${Number(h.total_hours)} approved hours: ${Number(h.overtime_hours)} at 1.5×, ${Number(h.double_hours)} at 2× (Sundays and public holidays).` +
+      (Number(h.pending) ? ` ${h.pending} ${Number(h.pending) === 1 ? "entry is" : "entries are"} still waiting for approval and not included.` : "");
+  });
   modal.addEventListener("change", refreshPreview);
   refreshOvertime();
   refreshPreview();

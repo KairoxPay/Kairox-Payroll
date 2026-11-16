@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | Timesheets</title>
+  <link rel="stylesheet" href="css/dashboard-v2.css">
+  <link rel="stylesheet" href="css/app-pages.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <!-- Replaced by the standard sidebar from js/topbar.js. These links only show if that script cannot load. -->
+      <div class="brand"><div class="brand-mark">K</div><div><h1>KAIROX</h1><p>Payroll</p></div></div>
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="dashboard-v2.html"><span>Home</span></a>
+        <a class="nav-item active" href="timesheets.html" aria-current="page"><span>Timesheets</span></a>
+      </nav>
+    </aside>
+
+    <main class="dashboard-main">
+      <div id="pageBanner" class="page-banner" hidden></div>
+
+      <header class="topbar">
+        <div>
+          <h2>Timesheets</h2>
+          <p>Hours employees clocked in My portal. Approve them before payroll: only approved hours reach the payroll.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="notification-button" aria-label="Notifications">♢<span class="notification-count">0</span></button>
+          <div class="topbar-avatar">?</div>
+        </div>
+      </header>
+
+      <div id="tsMsg" class="form-message" role="status" style="margin:0 0 14px"></div>
+
+      <section class="page-card" id="tsSwitchCard" hidden>
+        <div class="page-card-head"><div><h3>Clock-in for employees</h3>
+          <p>When this is on, employees see a Clock in button in My portal.</p></div>
+          <label class="settings-check" style="display:flex;gap:8px;align-items:center;font-weight:700"><input type="checkbox" id="tsEnabled"> Employees can clock in</label></div>
+      </section>
+
+      <section class="page-card">
+        <div class="page-card-head">
+          <div><h3 id="tsRangeTitle">This week</h3><p id="tsRangeSub"></p></div>
+          <div class="row-actions" style="flex-wrap:wrap">
+            <button type="button" class="btn small" id="tsPrev" aria-label="Previous week">◀ Previous</button>
+            <button type="button" class="btn small" id="tsThis">This week</button>
+            <button type="button" class="btn small" id="tsNext" aria-label="Next week">Next ▶</button>
+            <input type="date" id="tsFrom" aria-label="From"> <input type="date" id="tsTo" aria-label="To">
+            <button type="button" class="btn small" id="tsCsv">Export CSV</button>
+            <button type="button" class="btn small primary" id="tsAdd">Add hours</button>
+          </div>
+        </div>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th>Employee</th><th class="num">Approved</th><th class="num">Waiting</th><th class="num">Still clocked in</th></tr></thead>
+          <tbody id="tsSummary"></tbody></table></div>
+      </section>
+
+      <section class="page-card">
+        <div class="page-card-head"><div><h3>Entries</h3><p>Tick entries, then approve or reject them. Sundays and public holidays are marked: they are paid at double time.</p></div>
+          <div class="row-actions">
+            <select id="tsFilter" aria-label="Show"><option value="pending">Waiting for approval</option><option value="all">All entries</option></select>
+            <button type="button" class="btn small" id="tsReject">Reject ticked</button>
+            <button type="button" class="btn small primary" id="tsApprove">Approve ticked</button>
+          </div></div>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th><input type="checkbox" id="tsAll" aria-label="Tick all"></th><th>Employee</th><th>Day</th><th>In</th><th>Out</th><th class="num">Hours</th><th>Status</th><th></th></tr></thead>
+          <tbody id="tsBody"><tr class="empty-row"><td colspan="8">Loading…</td></tr></tbody></table></div>
+      </section>
+
+      <div class="dialog-backdrop" id="tsDialog" hidden>
+        <div class="dialog" id="tsBox" role="dialog" aria-modal="true" aria-labelledby="tsTitle" style="width:min(560px,100%)"></div>
+      </div>
+
+      <footer class="dashboard-footer">
+        <span>© 2026 Kairox Technologies</span>
+        <span>Version 1.0.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/timesheets.js"></script>
+  <script src="js/topbar.js"></script>
+</body>
+</html>
