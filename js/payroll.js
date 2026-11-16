@@ -519,6 +519,8 @@ function blankPayrollInputs() {
     overtimeHours: 0,
     holidayHours: 0,
     weeklyHours: 40,
+    expenseAmount: 0,
+    expenseClaims: [],
     notes: "",
     exempt: { nis: false, nht: false, edTax: false, paye: false }
   };
@@ -532,7 +534,7 @@ function normaliseInputs(raw) {
     "overtime", "bonus", "taxableAllowance", "exemptAllowance",
     "adjustment", "unpaidDays", "workingDays", "pension",
     "loanDeduction", "otherDeductions", "payeAdjustment",
-    "overtimeHours", "holidayHours", "weeklyHours"
+    "overtimeHours", "holidayHours", "weeklyHours", "expenseAmount"
   ].forEach((key) => {
     if (source[key] !== undefined && source[key] !== null && source[key] !== "") {
       inputs[key] = payrollNumber(source[key]);
@@ -548,6 +550,8 @@ function normaliseInputs(raw) {
   }
 
   inputs.notes = String(source.notes || "");
+  inputs.expenseClaims = Array.isArray(source.expenseClaims) ? source.expenseClaims.map(String) : [];
+  if (!inputs.expenseClaims.length) inputs.expenseAmount = 0;
 
   const exempt = source.exempt || {};
   inputs.exempt = {
@@ -616,7 +620,8 @@ function calculateEmployeeRow(employee, rawInputs) {
       overtime: inputs.overtime,
       bonus: inputs.bonus,
       taxableAllowances: inputs.taxableAllowance,
-      exemptAllowances: inputs.exemptAllowance,
+      // Approved expense claims (phase38) are paid back free of tax, so they sit with the non-taxable allowances.
+      exemptAllowances: PayrollEngine.round2(inputs.exemptAllowance + (inputs.expenseAmount || 0)),
       adjustments: inputs.adjustment,
       pension: inputs.pension,
       otherDeductions: round(loanDeduction + otherDeductions),
@@ -1461,6 +1466,8 @@ function collectPayItems(modal) {
       holidayHours: read("#pi_hol_hours"),
       weeklyHours: read("#pi_week_hours"),
       notes: modal.querySelector("#pi_notes").value.trim(),
+      expenseAmount: payrollNumber(modal.dataset.expenseAmount),
+      expenseClaims: JSON.parse(modal.dataset.expenseClaims || "[]"),
       exempt: {
         nis: checked("#pi_ex_nis"),
         nht: checked("#pi_ex_nht"),
@@ -1543,6 +1550,15 @@ function openPayItemsDialog(employeeId) {
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 8px">
         <button type="button" id="pi_use_hours" class="btn small">Use approved timesheet hours</button>
         <span id="pi_hours_note" style="font-size:13px;color:#6f7285"></span>
+      </div>
+    </fieldset>
+    <fieldset class="pay-items-expenses" style="border:1px solid #e3e4ec;border-radius:10px;padding:10px 14px 8px;margin:0 0 14px">
+      <legend style="font-weight:700;padding:0 6px">Expense claims</legend>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <strong id="pi_exp_amount">${formatPayrollCurrency(inputs.expenseAmount)}</strong>
+        <button type="button" id="pi_use_expenses" class="btn small">Add approved expenses</button>
+        <button type="button" id="pi_clear_expenses" class="btn small" ${inputs.expenseClaims.length ? "" : "hidden"}>Remove</button>
+        <span id="pi_exp_note" style="font-size:13px;color:#6f7285">${inputs.expenseClaims.length ? `${inputs.expenseClaims.length} approved claim(s) in this payroll. Paid free of tax, shown with non-taxable allowances.` : "Approved claims from the Expenses page, paid back free of tax."}</span>
       </div>
     </fieldset>
     <div class="pay-items-grid">
@@ -1645,6 +1661,35 @@ function openPayItemsDialog(employeeId) {
     note.textContent = `${Number(h.total_hours)} approved hours: ${Number(h.overtime_hours)} at 1.5×, ${Number(h.double_hours)} at 2× (Sundays and public holidays).` +
       (Number(h.pending) ? ` ${h.pending} ${Number(h.pending) === 1 ? "entry is" : "entries are"} still waiting for approval and not included.` : "");
   });
+  // Approved expense claims (phase38 Expenses): replaces whatever was added before, so pressing it twice does not pay twice.
+  modal.dataset.expenseAmount = String(inputs.expenseAmount || 0);
+  modal.dataset.expenseClaims = JSON.stringify(inputs.expenseClaims || []);
+  const showExpenses = (amount, ids, text) => {
+    modal.dataset.expenseAmount = String(amount);
+    modal.dataset.expenseClaims = JSON.stringify(ids);
+    modal.querySelector("#pi_exp_amount").textContent = formatPayrollCurrency(amount);
+    modal.querySelector("#pi_clear_expenses").hidden = !ids.length;
+    modal.querySelector("#pi_exp_note").textContent = text;
+    refreshPreview();
+  };
+  modal.querySelector("#pi_use_expenses").addEventListener("click", async () => {
+    const note = modal.querySelector("#pi_exp_note");
+    note.textContent = "Reading approved claims…";
+    const { data, error } = await supabaseClient.rpc("expenses_to_pay", {
+      p_workspace: (window.KairoxCompany && window.KairoxCompany.workspace && window.KairoxCompany.workspace()) || localStorage.getItem("kairoxWorkspace"),
+      p_employee: employee.id
+    });
+    if (error) {
+      note.textContent = /could not find the function/i.test(error.message || "") ? "Expense claims are not set up yet." : (error.message || "Claims could not be read.");
+      return;
+    }
+    const claims = data || [];
+    if (!claims.length) { showExpenses(0, [], "No approved claims waiting to be paid."); return; }
+    const total = PayrollEngine.round2(claims.reduce((t, c) => t + payrollNumber(c.amount), 0));
+    showExpenses(total, claims.map((c) => c.id),
+      `${claims.length} approved claim(s): ${claims.map((c) => `${c.category} ${formatPayrollCurrency(c.amount)}`).join(", ")}. They are marked paid when this payroll is processed.`);
+  });
+  modal.querySelector("#pi_clear_expenses").addEventListener("click", () => showExpenses(0, [], "Removed. The claims stay approved for a later payroll."));
   modal.addEventListener("change", refreshPreview);
   refreshOvertime();
   refreshPreview();
