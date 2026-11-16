@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | Performance reviews</title>
+  <link rel="stylesheet" href="css/dashboard-v2.css">
+  <link rel="stylesheet" href="css/app-pages.css">
+  <style>
+    .rv-check { display: flex; gap: 8px; align-items: center; margin: 12px 0 4px; font-weight: 700; }
+    .rv-check input, .rv-people input { width: 18px; height: 18px; margin: 0; }
+    .rv-h { margin: 18px 0 8px; font-size: 15px; }
+    .rv-people { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px 14px; max-height: 260px; overflow: auto; padding: 4px; }
+    .rv-people label { display: flex; gap: 8px; align-items: center; }
+    .rv-item { display: grid; grid-template-columns: 110px minmax(0, 1fr) minmax(0, 1.4fr) auto; gap: 8px; margin-bottom: 8px; }
+    .rv-item select, .rv-item input { min-height: 40px; padding: 8px 10px; border: 1px solid #dfe0e8; border-radius: 10px; font: inherit; }
+    .rv-point { padding: 14px 0; border-top: 1px solid #eceef4; }
+    .rv-point h4 { margin: 0 0 4px; } .rv-point .muted { margin: 0 0 8px; }
+    .rv-self { margin: 0 0 10px; padding: 8px 12px; border-radius: 10px; background: #f6f4fb; font-size: 14px; }
+    .rv-rate { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+    .rv-rate label { display: inline-flex; align-items: center; gap: 5px; padding: 6px 10px; border: 1px solid #dfe0e8; border-radius: 999px; cursor: pointer; font-size: 14px; }
+    .rv-rate input { margin: 0; }
+    .rv-rate label:has(input:checked) { border-color: #4b2394; background: #ece6f8; font-weight: 700; }
+    .rv-box textarea, .rv-point textarea { width: 100%; min-height: 70px; padding: 9px 12px; border: 1px solid #dfe0e8; border-radius: 10px; font: inherit; }
+    @media (max-width: 620px) { .rv-item { grid-template-columns: 1fr auto; } .rv-item > :nth-child(2), .rv-item > :nth-child(3) { grid-column: 1 / -1; } }
+  </style>
+</head>
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <!-- Replaced by the standard sidebar from js/topbar.js. These links only show if that script cannot load. -->
+      <div class="brand"><div class="brand-mark">K</div><div><h1>KAIROX</h1><p>Payroll</p></div></div>
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="dashboard-v2.html"><span>Home</span></a>
+        <a class="nav-item active" href="reviews.html" aria-current="page"><span>Reviews</span></a>
+      </nav>
+    </aside>
+
+    <main class="dashboard-main">
+      <div id="pageBanner" class="page-banner" hidden></div>
+
+      <header class="topbar">
+        <div>
+          <h2>Performance reviews</h2>
+          <p>Rate skills and goals, agree next steps, and keep a dated record. Employees rate themselves first and confirm they have seen the result.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="notification-button" aria-label="Notifications">♢<span class="notification-count">0</span></button>
+          <div class="topbar-avatar">?</div>
+        </div>
+      </header>
+
+      <div id="rvMsg" class="form-message" role="status" style="margin:0 0 14px"></div>
+
+      <section class="page-card" id="rvStartCard">
+        <div class="page-card-head"><div><h3>Start reviews</h3><p>Choose the people, the points to rate, and whether they rate themselves first. Managers can review their own team.</p></div>
+          <button type="button" class="btn" id="rvToggle">Start reviews</button></div>
+        <form id="rvForm" hidden>
+          <div class="form-grid">
+            <div class="field"><label for="rvTitle">Name of the review</label><input id="rvTitle" maxlength="120" placeholder="For example: 2026 annual review"></div>
+            <div class="field"><label for="rvFrom">Period from</label><input id="rvFrom" type="date"></div>
+            <div class="field"><label for="rvTo">Period to</label><input id="rvTo" type="date"></div>
+            <div class="field"><label for="rvDue">Finish by</label><input id="rvDue" type="date"></div>
+          </div>
+          <label class="rv-check"><input type="checkbox" id="rvSelf" checked> Employees rate themselves first in My portal (recommended)</label>
+          <h4 class="rv-h">Who to review</h4>
+          <div class="rv-people" id="rvPeople"><p class="muted">Loading…</p></div>
+          <h4 class="rv-h">Points to rate (1 to 5)</h4>
+          <div id="rvItems"></div>
+          <div class="row-actions" style="margin:8px 0 16px"><button type="button" class="btn small" id="rvAddSkill">+ Add a skill</button><button type="button" class="btn small" id="rvAddGoal">+ Add a goal</button></div>
+          <button type="submit" class="btn primary" id="rvStart">Start the reviews</button>
+        </form>
+      </section>
+
+      <section class="page-card">
+        <div class="page-card-head"><div><h3>Reviews</h3><p>Open a review to rate it. The employee only sees your ratings once you share it.</p></div>
+          <select id="rvFilter" aria-label="Show"><option value="open">Still to do</option><option value="all">All reviews</option></select></div>
+        <div class="table-wrap"><table class="data"><thead><tr><th>Employee</th><th>Review</th><th>Status</th><th>Finish by</th><th class="num">Overall</th><th></th></tr></thead>
+          <tbody id="rvBody"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody></table></div>
+      </section>
+
+      <div class="dialog-backdrop" id="rvDialog" hidden>
+        <div class="dialog" id="rvBox" role="dialog" aria-modal="true" aria-labelledby="rvDlgTitle" style="width:min(760px,100%);max-height:90vh;overflow:auto"></div>
+      </div>
+
+      <footer class="dashboard-footer">
+        <span>© 2026 Kairox Technologies</span>
+        <span>Version 1.0.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/reviews.js"></script>
+  <script src="js/topbar.js"></script>
+</body>
+</html>
