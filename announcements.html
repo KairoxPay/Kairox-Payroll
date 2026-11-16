@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | Announcements</title>
+  <link rel="stylesheet" href="css/dashboard-v2.css">
+  <link rel="stylesheet" href="css/app-pages.css">
+  <style>
+    .an-item { padding: 16px 0; border-top: 1px solid #eceef4; } .an-item:first-child { border-top: 0; padding-top: 4px; }
+    .an-item.archived { opacity: .6; }
+    .an-top { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; }
+    .an-top h4 { margin: 0; font-size: 17px; } .an-top p { margin: 4px 0 0; }
+    .an-actions { display: flex; gap: 8px; }
+    .an-tag { padding: 1px 8px; border-radius: 999px; background: #eceef4; color: #5f6475; font-size: 12px; }
+    .an-body { margin: 10px 0; white-space: pre-line; color: #303145; }
+    .an-progress { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-size: 14px; }
+    .an-bar { flex: 0 1 260px; height: 10px; border-radius: 999px; background: #ece9f6; overflow: hidden; }
+    .an-bar span { display: block; height: 100%; background: #16a34a; border-radius: 999px; }
+  </style>
+</head>
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <!-- Replaced by the standard sidebar from js/topbar.js. These links only show if that script cannot load. -->
+      <div class="brand"><div class="brand-mark">K</div><div><h1>KAIROX</h1><p>Payroll</p></div></div>
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="dashboard-v2.html"><span>Home</span></a>
+        <a class="nav-item active" href="announcements.html" aria-current="page"><span>Announcements</span></a>
+      </nav>
+    </aside>
+
+    <main class="dashboard-main">
+      <div id="pageBanner" class="page-banner" hidden></div>
+
+      <header class="topbar">
+        <div>
+          <h2>Announcements</h2>
+          <p>Tell staff about changes, share policies, and keep a record of who has read and confirmed them.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="notification-button" aria-label="Notifications">♢<span class="notification-count">0</span></button>
+          <div class="topbar-avatar">?</div>
+        </div>
+      </header>
+
+      <div id="anMsg" class="form-message" role="status" style="margin:0 0 14px"></div>
+
+      <section class="page-card">
+        <div class="page-card-head"><div><h3>New announcement</h3><p>Employees see it in My portal. Tick the box to ask each person to confirm they have read it: their confirmation is dated and kept.</p></div></div>
+        <form id="anForm" class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+          <div class="field" style="grid-column:1/-1"><label for="anTitle">Title</label><input id="anTitle" maxlength="120" placeholder="For example: New staff handbook for 2026"></div>
+          <div class="field" style="grid-column:1/-1"><label for="anBody">Message</label><textarea id="anBody" rows="5" maxlength="4000" style="width:100%" placeholder="What staff need to know."></textarea></div>
+          <div class="field"><label for="anDoc">Attach a company document (optional)</label><select id="anDoc"><option value="">No document</option></select>
+            <small class="muted">Upload it on the Documents page first. Only the people this is for can open it.</small></div>
+          <div class="field"><label for="anAudience">Who is it for</label><select id="anAudience"><option value="">Everyone</option></select></div>
+          <div class="field"><label for="anDue">Confirm by (optional)</label><input id="anDue" type="date"></div>
+          <div style="grid-column:1/-1;display:grid;gap:10px">
+            <label class="settings-check" style="display:flex;gap:8px;align-items:center;font-weight:700"><input type="checkbox" id="anAck" style="width:18px;height:18px;margin:0"> Ask each person to confirm "I have read and understood this"</label>
+            <label class="settings-check" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="anEmail" style="width:18px;height:18px;margin:0"> Also email them that there is a new announcement (needs Email alerts set up)</label>
+          </div>
+          <div style="grid-column:1/-1"><button type="submit" class="btn primary" id="anPost">Post announcement</button></div>
+        </form>
+      </section>
+
+      <section class="page-card">
+        <div class="page-card-head"><div><h3>Announcements</h3><p>Who has read and confirmed each one. Archived ones are hidden from employees.</p></div>
+          <label class="settings-check" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="anShowArchived"> Show archived</label></div>
+        <div id="anList"><p class="muted">Loading…</p></div>
+      </section>
+
+      <div class="dialog-backdrop" id="anDialog" hidden>
+        <div class="dialog" id="anBox" role="dialog" aria-modal="true" aria-labelledby="anDlgTitle" style="width:min(640px,100%)"></div>
+      </div>
+
+      <footer class="dashboard-footer">
+        <span>© 2026 Kairox Technologies</span>
+        <span>Version 1.0.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/announcements.js"></script>
+  <script src="js/topbar.js"></script>
+</body>
+</html>

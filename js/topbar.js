@@ -46,6 +46,7 @@
     "documents.html": ["Company documents are private to staff unless you share them to My portal."],
     "settings.html": ["Company details are printed on payslips and returns.", "My portal: choose what employees can see.", "Email alerts: send payslip and leave emails from your Gmail."],
     "security.html": ["Turn on two-step sign-in: an app on your phone gives a 6-digit code at sign-in.", "Lost phone? An admin can reset it (see the note on this page)."],
+    "announcements.html": ["Post to everyone or one department. Attach a document from the Documents page if staff must read it.", "Tick \"Ask each person to confirm\" to get a dated record that each person read it.", "To change an announcement, archive it and post a new one, so confirmations always match the words people saw."],
     "costs.html": ["Employer cost is gross pay plus non-taxable pay plus the company's NIS, NHT, Education Tax and HEART.", "Only processed payrolls are counted, by the month they were paid.", "The percentage under each figure compares with the same length of time just before."],
     "backup.html": ["Download a backup at least once a month and keep it somewhere private."],
     "me.html": ["Your payslips, leave, details and documents. What you see depends on what your employer has turned on."],
@@ -813,6 +814,7 @@
   // from the person's role, and replaces whatever the page had. The page's content is not touched.
   const SIDEBAR_ICONS = {
     clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+    megaphone: '<path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1Z"/><path d="M16 9a3 3 0 0 1 0 6"/><path d="M19 6a7 7 0 0 1 0 12"/>',
     trend: '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
     chat: '<path d="M4 20l1.3-3.9A8 8 0 1 1 8 19z"/><path d="M9 10h6M9 13h4"/>',
     receipt: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>',
@@ -856,7 +858,7 @@
       return [{ items: [item("me.html", "My portal", "portal"), item("security.html", "Account security", "lock"), item("support.html", "Support", "help")] }];
     }
     if (kind === "hr") {
-      return [{ items: [item("people.html", "People", "team"), item("leave.html", "Leave", "calendar"), item("timesheets.html", "Timesheets", "clock"), item("expenses.html", "Expenses", "receipt"), item("onboarding.html", "New hires", "checklist"), item("whatsapp.html", "WhatsApp", "chat"), item("documents.html", "Documents", "folder"), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }];
+      return [{ items: [item("people.html", "People", "team"), item("leave.html", "Leave", "calendar"), item("timesheets.html", "Timesheets", "clock"), item("expenses.html", "Expenses", "receipt"), item("onboarding.html", "New hires", "checklist"), item("whatsapp.html", "WhatsApp", "chat"), item("announcements.html", "Announcements", "megaphone"), item("documents.html", "Documents", "folder"), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }];
     }
     if (kind === "manager") {
       return [{ items: [item("people.html", "My team", "team"), item("leave.html", "Leave", "calendar"), item("timesheets.html", "Timesheets", "clock"), item("expenses.html", "Expenses", "receipt"), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }];
@@ -864,7 +866,7 @@
 
     return [
       { items: [item("dashboard-v2.html", "Home", "home")] },
-      { title: "People", items: [item("employees-v2.html", "Employees", "users"), item("people.html", "Team & access", "team"), item("leave.html", "Leave", "calendar"), item("timesheets.html", "Timesheets", "clock"), item("expenses.html", "Expenses", "receipt"), item("onboarding.html", "New hires", "checklist"), item("leavers.html", "Leavers", "leaver")] },
+      { title: "People", items: [item("employees-v2.html", "Employees", "users"), item("people.html", "Team & access", "team"), item("leave.html", "Leave", "calendar"), item("timesheets.html", "Timesheets", "clock"), item("expenses.html", "Expenses", "receipt"), item("onboarding.html", "New hires", "checklist"), item("leavers.html", "Leavers", "leaver"), ...(canEmail ? [item("announcements.html", "Announcements", "megaphone")] : [])] },
       { title: "Pay", items: [item("payroll.html", "Payroll", "payroll"), item("payslips.html", "Payslips", "payslip"), ...(canEmail ? [item("notices.html", "Email payslips", "mail"), item("whatsapp.html", "WhatsApp", "chat"), item("bank.html", "Bank payments", "bank"), item("loans.html", "Loans", "loan")] : []), item("reports.html", "Reports", "chart"), item("costs.html", "Payroll costs", "trend"), item("compliance.html", "Compliance", "shield")] },
       { title: "Company", items: [...(!profile.signedIn || ["admin", "director"].includes(profile.role) ? [item("setup.html", "Setup checklist", "checklist")] : []), item("documents.html", "Documents", "folder"), item("settings.html", "Settings", "settings"), ...(canEmail ? [item("backup.html", "Backup", "backup")] : []), item("security.html", "Account security", "lock"), item("support.html", "Support", "help"), ...portal] }
     ];
@@ -1032,10 +1034,10 @@
   // database, which refuses them the data whatever the page does.
   const APP_PAGES = [
     "dashboard-v2.html", "employees-v2.html", "employee-profile.html", "edit-employee.html", "add-employee.html", "payroll.html", "payslips.html",
-    "payslip.html", "notices.html", "bank.html", "compliance.html", "reports.html", "documents.html", "settings.html", "leave.html", "leavers.html", "people.html", "me.html", "support.html", "security.html", "onboarding.html", "backup.html", "loans.html", "timesheets.html", "expenses.html", "whatsapp.html", "setup.html", "costs.html"
+    "payslip.html", "notices.html", "bank.html", "compliance.html", "reports.html", "documents.html", "settings.html", "leave.html", "leavers.html", "people.html", "me.html", "support.html", "security.html", "onboarding.html", "backup.html", "loans.html", "timesheets.html", "expenses.html", "whatsapp.html", "setup.html", "costs.html", "announcements.html"
   ];
   const ROLE_PAGES = {
-    hr: ["people.html", "leave.html", "documents.html", "support.html", "me.html", "security.html", "onboarding.html", "timesheets.html", "expenses.html", "whatsapp.html"],
+    hr: ["people.html", "leave.html", "documents.html", "support.html", "me.html", "security.html", "onboarding.html", "timesheets.html", "expenses.html", "whatsapp.html", "announcements.html"],
     manager: ["people.html", "leave.html", "support.html", "me.html", "security.html", "timesheets.html", "expenses.html"],
     employee: ["me.html", "support.html", "security.html"]
   };
