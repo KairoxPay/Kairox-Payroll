@@ -81,6 +81,64 @@
     pdfRgb: () => { const s = brand && brand.payslips && brandShades(brand); return s ? hexRgb(s.top) : null; }
   };
 
+  /* ---------- optional features (Phase 48) ---------- */
+  // A company can turn optional features off (Settings, Features). They then disappear from the menu, My portal and
+  // Pay items, and their pages say they are off. Nothing is deleted. Remembered per company in this browser so pages
+  // open without a flash, then refreshed from the database.
+  const FEATURE_PAGES = { "timesheets.html": "timesheets", "expenses.html": "expenses", "loans.html": "loans", "onboarding.html": "onboarding",
+    "whatsapp.html": "whatsapp", "announcements.html": "announcements", "reviews.html": "reviews", "signatures.html": "signatures", "costs.html": "costs" };
+  const FEATURE_PARTS = { timesheets: ["#clockCard", "#pi_use_hours", "#pi_hours_note"], expenses: ["#expenseCard", ".pay-items-expenses"],
+    announcements: ["#announceCard"], reviews: ["#reviewCard"], signatures: ["#signCard"], bank_changes: ["#bankRequestsCard", "#myBankCard"] };
+  const FEATURE_KEY = () => `kairoxFeatures:${workspaceId()}`;
+  let featuresOff = (() => { try { const v = JSON.parse(localStorage.getItem(FEATURE_KEY()) || "[]"); return Array.isArray(v) ? v : []; } catch (e) { return []; } })();
+  const featureOn = (key) => !key || !featuresOff.includes(key);
+
+  function applyFeatures() {
+    let tag = document.getElementById("kxFeatures");
+    const hidden = featuresOff.flatMap((k) => FEATURE_PARTS[k] || []);
+    if (!tag) { tag = document.createElement("style"); tag.id = "kxFeatures"; document.head.appendChild(tag); }
+    tag.textContent = (hidden.length ? `${hidden.join(", ")} { display: none !important; }` : "") +
+      "body.kx-feature-off main > :not(header):not(#kxFeatureOff):not(footer):not(.topbar) { display: none !important; }";
+    const here = (window.location.pathname.split("/").pop() || "").toLowerCase();
+    const off = !featureOn(FEATURE_PAGES[here]);
+    const run = () => {
+      document.body.classList.toggle("kx-feature-off", off);
+      let note = document.getElementById("kxFeatureOff");
+      if (off && !note) {
+        const main = document.querySelector("main");
+        if (!main) return;
+        note = document.createElement("section");
+        note.id = "kxFeatureOff";
+        note.className = "page-card";
+        note.setAttribute("style", "padding:22px;border-radius:16px;background:#fff;border:1px solid #e7e9f0");
+        note.innerHTML = '<h3 style="margin:0 0 6px">This feature is turned off for this company</h3>' +
+          '<p style="margin:0">An admin or a managing director can turn it on again in <a href="settings.html#featuresCard">Settings, Features</a>. Nothing was deleted.</p>';
+        const header = main.querySelector("header");
+        if (header && header.parentNode === main) header.after(note); else main.prepend(note);
+      } else if (!off && note) note.remove();
+    };
+    if (document.body) run(); else document.addEventListener("DOMContentLoaded", run);
+  }
+  applyFeatures();
+
+  async function loadFeatures() {
+    try {
+      const { data, error } = await supabaseClient.rpc("company_features_off", { p_workspace: workspaceId() });
+      if (error) return;   // Phase 48 not installed yet: everything stays on
+      const next = Array.isArray(data) ? data : [];
+      if (next.join() === featuresOff.join()) return;
+      featuresOff = next;
+      try { localStorage.setItem(FEATURE_KEY(), JSON.stringify(next)); } catch (e) { /* ignore */ }
+      applyFeatures();
+      renderSidebar();
+    } catch (error) { /* everything stays on */ }
+  }
+
+  window.KairoxFeatures = {
+    on: featureOn, off: () => featuresOff.slice(),
+    set: (list) => { featuresOff = Array.isArray(list) ? list.slice() : []; try { localStorage.setItem(FEATURE_KEY(), JSON.stringify(featuresOff)); } catch (e) { /* ignore */ } applyFeatures(); renderSidebar(); }
+  };
+
   const ROLE_LABELS = { admin: "Administrator", director: "Managing director", payroll: "Payroll / accounts officer", viewer: "Viewer", hr: "HR officer", manager: "Manager" };
   const BELL =
     '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>';
@@ -112,7 +170,7 @@
     "expenses.html": ["Approve claims, then add them to payroll from the person's Pay items.", "They are paid free of tax and marked Paid when the payroll is processed."],
     "onboarding.html": ["Tick items as each new hire's paperwork is done. Green items are already on record."],
     "documents.html": ["Company documents are private to staff unless you share them to My portal."],
-    "settings.html": ["Company details are printed on payslips and returns.", "My portal: choose what employees can see.", "Email alerts: send payslip and leave emails from your Gmail."],
+    "settings.html": ["Company details are printed on payslips and returns.", "My portal: choose what employees can see.", "Email alerts: send payslip and leave emails from your Gmail.", "Features: turn optional parts of Kairox Pay on or off for this company. Nothing is deleted when one is off.", "Company colours: this company's own colours and logo."],
     "security.html": ["Turn on two-step sign-in: an app on your phone gives a 6-digit code at sign-in.", "Lost phone? An admin can reset it (see the note on this page)."],
     "signatures.html": ["Upload a PDF, tick who must sign, and send. They open it and sign in My portal.", "Download signed copy gives the original PDF with a certificate page: who signed, when, from where, and the file's fingerprint.", "Not for wills, property transfers, trusts or powers of attorney: those still need ink."],
     "companies.html": ["New company creates an empty company for a customer; invite their admin with their email.", "Open to help gives you admin access to a customer's company; it is written in their audit trail. Remove my access when you are done.", "Invitation emails need the invite-user Supabase function (set up once); without it, invite the person in Supabase and their role is applied automatically."],
@@ -278,6 +336,7 @@
 
       company.role = role.data || null;
       loadBrand();
+      loadFeatures();
       supabaseClient.rpc("is_platform_owner").then(({ data: own, error: ownErr }) => {
         const v = !ownErr && own === true;
         try { if (v) localStorage.setItem("kairoxOwner", "1"); else localStorage.removeItem("kairoxOwner"); } catch (e) { /* ignore */ }
@@ -1061,14 +1120,16 @@
       // Only people who can process payroll see "Email payslips" (shown to staff until the role has loaded).
       const canEmail = !profile.signedIn || ["admin", "director", "payroll"].includes(profile.role);
       const ownLogo = brand && brand.menuLogo ? companyLogo() : null;
-      const key = [kind, hasPortal, current, roleText, hasTopbarBell, canEmail, isOwner, ownLogo ? ownLogo.length : 0, brand ? brand.primary : ""].join("|");
+      const key = [kind, hasPortal, current, roleText, hasTopbarBell, canEmail, isOwner, featuresOff.join(","), ownLogo ? ownLogo.length : 0, brand ? brand.primary : ""].join("|");
 
       if (aside.classList.contains("kx-sidebar") && aside.dataset.kxKey === key) return;
 
       injectStyles();
       injectSidebarStyles();
 
-      const groups = sidebarGroups(kind, hasPortal, canEmail);
+      const groups = sidebarGroups(kind, hasPortal, canEmail)
+        .map((g) => ({ ...g, items: g.items.filter((i) => featureOn(FEATURE_PAGES[i.href])) }))
+        .filter((g) => g.items.length);
       const home = kind === "employee" ? "me.html" : kind === "hr" || kind === "manager" ? "people.html" : "dashboard-v2.html";
       const links = groups
         .map((g) => (g.title ? `<div class="kx-group">${esc(g.title)}</div>` : "") +
