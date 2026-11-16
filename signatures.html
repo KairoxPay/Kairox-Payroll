@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kairox Pay | E-signatures</title>
+  <link rel="stylesheet" href="css/dashboard-v2.css">
+  <link rel="stylesheet" href="css/app-pages.css">
+  <style>
+    .sg-people { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px 14px; max-height: 240px; overflow: auto; padding: 4px; }
+    .sg-people label, .sg-check { display: flex; gap: 8px; align-items: center; } .sg-check { margin: 14px 0 6px; }
+    .sg-people input, .sg-check input { width: 18px; height: 18px; margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <!-- Replaced by the standard sidebar from js/topbar.js. These links only show if that script cannot load. -->
+      <div class="brand"><div class="brand-mark">K</div><div><h1>KAIROX</h1><p>Payroll</p></div></div>
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="dashboard-v2.html"><span>Home</span></a>
+        <a class="nav-item active" href="signatures.html" aria-current="page"><span>E-signatures</span></a>
+      </nav>
+    </aside>
+
+    <main class="dashboard-main">
+      <div id="pageBanner" class="page-banner" hidden></div>
+
+      <header class="topbar">
+        <div>
+          <h2>E-signatures</h2>
+          <p>Send contracts and HR documents for employees to sign in My portal, with a dated, tamper-evident record of each signature.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="notification-button" aria-label="Notifications">♢<span class="notification-count">0</span></button>
+          <div class="topbar-avatar">?</div>
+        </div>
+      </header>
+
+      <div id="sgMsg" class="form-message" role="status" style="margin:0 0 14px"></div>
+
+      <section class="page-card">
+        <div class="page-card-head"><div><h3>Send a document to sign</h3>
+          <p>Upload a PDF (a contract, a policy, a letter) and choose who signs it. They sign in My portal; you download a signed copy with a signing certificate.</p></div>
+          <button type="button" class="btn primary" id="sgToggle">Send a document</button></div>
+        <form id="sgForm" hidden>
+          <div class="form-grid">
+            <div class="field"><label for="sgTitle">Title</label><input id="sgTitle" maxlength="120" placeholder="For example: Employment contract"></div>
+            <div class="field"><label for="sgFile">PDF (up to 10 MB)</label><input id="sgFile" type="file" accept="application/pdf"></div>
+            <div class="field"><label for="sgDue">Sign by (optional)</label><input id="sgDue" type="date"></div>
+            <div class="field" style="grid-column:1/-1"><label for="sgMessage">Message to them (optional)</label><input id="sgMessage" maxlength="1000" placeholder="For example: Please read your new contract and sign by Friday."></div>
+          </div>
+          <h4 style="margin:16px 0 8px">Who must sign</h4>
+          <div class="sg-people" id="sgPeople"><p class="muted">Loading…</p></div>
+          <label class="sg-check"><input type="checkbox" id="sgEmail"> Also email them (needs Email alerts set up)</label>
+          <p class="muted small">Not for wills, property transfers, trusts or powers of attorney: Jamaican law needs ink signatures for those.</p>
+          <button type="submit" class="btn primary" id="sgSend">Send for signature</button>
+        </form>
+      </section>
+
+      <section class="page-card">
+        <div class="page-card-head"><div><h3>Documents sent</h3><p>Who has signed. A signed copy is the original PDF with a certificate page listing each signature.</p></div></div>
+        <div class="table-wrap"><table class="data"><thead><tr><th>Document</th><th>Sent</th><th>Signed</th><th>Sign by</th><th></th></tr></thead>
+          <tbody id="sgBody"><tr class="empty-row"><td colspan="5">Loading…</td></tr></tbody></table></div>
+      </section>
+
+      <div class="dialog-backdrop" id="sgDialog" hidden>
+        <div class="dialog" id="sgBox" role="dialog" aria-modal="true" aria-labelledby="sgDlgTitle" style="width:min(680px,100%);max-height:90vh;overflow:auto"></div>
+      </div>
+
+      <footer class="dashboard-footer">
+        <span>© 2026 Kairox Technologies</span>
+        <span>Version 1.0.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/sign-certificate.js"></script>
+  <script src="js/signatures.js"></script>
+  <script src="js/topbar.js"></script>
+</body>
+</html>
