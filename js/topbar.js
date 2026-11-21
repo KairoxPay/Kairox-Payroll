@@ -1067,11 +1067,11 @@
         .kx-brand { padding: 6px; } .kx-sidebar .kx-company, .kx-group, .kx-link span, .kx-user .user-details, .kx-chevron { display: none; }
         .kx-link { justify-content: center; padding: 10px; } .kx-foot { flex-direction: column; } .kx-user { justify-content: center; padding: 8px; }
       }
-      .kx-menu, .kx-bell-dup { display: none; }
-      .kx-menu { align-items: center; gap: 6px; min-height: 40px; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, .28); border-radius: 10px; color: #fff;
+      .kx-menu-toggle, .kx-bell-dup { display: none; }
+      .kx-menu-toggle { align-items: center; gap: 6px; min-height: 40px; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, .28); border-radius: 10px; color: #fff;
         background: rgba(255, 255, 255, .1); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
-      .kx-menu svg { width: 18px; height: 18px; }
-      .kx-menu:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+      .kx-menu-toggle svg { width: 18px; height: 18px; }
+      .kx-menu-toggle:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
       /* Phones: a slim bar (logo, company, Menu). The links and the profile and bell open under it. */
       @media (max-width: 620px) {
         .kx-layout { display: block !important; }
@@ -1082,7 +1082,7 @@
         .kx-sidebar .kx-company { display: block; margin: 0; } .kx-sidebar .kx-company-label { display: none; }
         .kx-sidebar .kx-company-name { display: block; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
         .kx-sidebar .kx-company select { min-height: 36px; padding: 6px 8px; font-size: 13px; }
-        .kx-menu { display: inline-flex; }
+        .kx-menu-toggle { display: inline-flex; }
         .kx-powered { display: none; grid-column: 1 / -1; } aside.kx-open .kx-powered { display: block; }
         .kx-nav, .kx-foot { display: none; grid-column: 1 / -1; }
         aside.kx-open { overflow-y: auto; }
@@ -1145,7 +1145,7 @@
         (ownLogo ? `<a class="kx-brand" href="${home}" aria-label="${esc(companyName ? companyName() : "Home")}"><img src="${esc(ownLogo)}" alt="${esc(companyName ? companyName() : "Company logo")}"></a>`
           : `<a class="kx-brand" href="${home}" aria-label="Kairox Pay"><img src="assets/images/kairox-pay-logo.png" alt="Kairox Pay"></a>`) +
         '<div id="kxCompanySlot"></div>' +
-        `<button type="button" class="kx-menu" aria-expanded="false" aria-controls="kxNav">${MENU_ICON}<span>Menu</span></button>` +
+        `<button type="button" class="kx-menu-toggle" aria-expanded="false" aria-controls="kxNav">${MENU_ICON}<span>Menu</span></button>` +
         `<nav class="kx-nav" id="kxNav" aria-label="Main">${links}<button type="button" class="kx-link kx-help" aria-haspopup="dialog" title="Help for this page">${HELP_ICON.replace('width="22" height="22"', 'class="kx-icon"')}<span>Help</span></button>${profile.signedIn ? `<button type="button" class="kx-link kx-signout" title="Sign out of Kairox Pay">${SIGNOUT_ICON}<span>Sign out</span></button>` : ""}</nav>` +
         (brand ? '<div class="kx-powered">Powered by Kairox Pay</div>' : "") +
         '<div class="kx-foot">' +
@@ -1157,7 +1157,7 @@
 
       if (aside.parentElement) aside.parentElement.classList.add("kx-layout");
 
-      const menu = aside.querySelector(".kx-menu");
+      const menu = aside.querySelector(".kx-menu-toggle");
       menu.addEventListener("click", () => {
         const open = aside.classList.toggle("kx-open");
         menu.setAttribute("aria-expanded", String(open));
